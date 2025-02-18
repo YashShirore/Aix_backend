@@ -1,0 +1,3484 @@
+: Saved
+: 
+: Serial Number: JAD21010ES3
+: Hardware:   ASA5516, 8192 MB RAM, CPU Atom C2000 series 2419 MHz, 1 CPU (8 cores)
+:
+ASA Version 9.16(4)
+!
+hostname DIDC-FIRE-08
+domain-name ops.nrtelecom.net
+enable password ***** level 5 pbkdf2
+enable password ***** pbkdf2
+service-module 1 keepalive-timeout 4
+service-module 1 keepalive-counter 6
+service-module sfr keepalive-timeout 4
+service-module sfr keepalive-counter 6
+passwd ***** encrypted
+names
+dns-guard
+no mac-address auto
+ip local pool OSG 192.168.21.2-192.168.21.254 mask 255.255.255.0
+bfd-template single-hop OSG
+ interval min-tx 300 min-rx 300 multiplier 3
+ echo
+!
+!
+interface GigabitEthernet1/1
+ description *** r=DIDC-INTR-01:i=Gig0/0/1 ***
+ nameif outside
+ security-level 0
+ ip address 194.72.85.161 255.255.255.240 standby 194.72.85.162 
+!
+interface GigabitEthernet1/2
+ description *** r=DIDC-AGGS-01:i=Ten1/6 ***
+ nameif inside
+ security-level 100
+ ip address 10.17.20.227 255.255.255.240 standby 10.17.20.228 
+!
+interface GigabitEthernet1/3
+ description *** r=DIDIR01:i=Eth0 ***
+ nameif mfa-vpn
+ security-level 50
+ ip address 10.17.20.241 255.255.255.248 standby 10.17.20.242 
+!
+interface GigabitEthernet1/4
+ description *** r=DIDC-INTR-01:i=Gig0 ***
+ nameif asr-mgt
+ security-level 0
+ ip address 10.17.20.254 255.255.255.252 
+!
+interface GigabitEthernet1/5
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface GigabitEthernet1/6
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface GigabitEthernet1/7
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface GigabitEthernet1/8
+ description LAN/STATE Failover Interface
+!
+interface Management1/1
+ description *** r=DIDC-SWCH-28:i=Gig1/0/2 ***
+ management-only
+ nameif management
+ security-level 100
+ ip address 10.16.80.133 255.255.255.192 standby 10.16.80.134 
+!
+interface Tunnel20
+ description *** IPsec VPN to ARK DCs via CG Merlin ***
+ nameif vti-outside-vpn-CGM
+ ip address 10.159.128.1 255.255.255.252 
+ tunnel source interface outside
+ tunnel destination 185.33.76.76
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile IPsec-CGM-ARK
+!
+interface Tunnel30
+ description *** CCT_ID: < 1234> DIDC-FIRE-09 IPSEC Tunnel to ATK_OKMS-Andover ***
+ nameif vti-outside-vpn-ATK_OKMS
+ ip address 10.159.128.41 255.255.255.252 
+ tunnel source interface outside
+ tunnel destination 194.72.121.169
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile NRT_IPSEC_PROFILE
+!
+interface Tunnel40
+ description *** CCT_ID: Primary Tunnel to Thales Reading> DIDC-FIRE-08-09 IPSEC Tunnel to Thales-Reading ***
+ nameif vti-outside-vpn-THALES_PRIMARY
+ ip address 10.159.128.50 255.255.255.252 
+ tunnel source interface outside
+ tunnel destination 109.234.169.146
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile NRT_IPSEC_PROFILE
+!
+interface Tunnel41
+ description *** CCT_ID: Tertiary Tunnel to Thales Crawley> DIDC-FIRE-08-09 IPSEC Tunnel to Thales-Crawley ***
+ nameif vti-outside-vpn-THALES_TERTIARY
+ ip address 10.159.128.58 255.255.255.252 
+ tunnel source interface outside
+ tunnel destination 109.234.168.146
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile NRT_IPSEC_PROFILE
+!
+banner exec You are now logged into: DIDC-FIRE-08
+banner exec **** All activity is being logged for review by System Administrators ****
+banner login ********************************************************************
+banner login *     The information on this device and associated networks       *
+banner login *              is the property of Network Rail Ltd.                *
+banner login *                                                                  *
+banner login *     You must be an authorised user to access this system and     *
+banner login *              all associated systems and networks.                *
+banner login *                                                                  *
+banner login *       You are not authorised to attempt to bypass system         *
+banner login *               restrictions and security controls.                *
+banner login *                                                                  *
+banner login *  By logging in, you agree to abide by these rules, and to have   *
+banner login *    your activity logged for review by System Administrators.     *
+banner login *                                                                  *
+banner login *        If you do not agree with this policy, log off now.        *
+banner login *v01                                                               *
+banner login ********************************************************************
+banner motd You are now logged into: DIDC-FIRE-08
+banner motd **** All activity is being logged for review by System Administrators ****
+banner asdm You are now logged into: DIDC-FIRE-08
+banner asdm **** All activity is being logged for review by System Administrators ****
+boot system disk0:/asa9-16-4-lfbff-k8.SPA
+ftp mode passive
+clock timezone GMT/BST 0
+clock summer-time GMT/BDT recurring last Sun Mar 1:00 last Sun Oct 2:00
+dns domain-lookup outside
+dns domain-lookup inside
+dns server-group DefaultDNS
+ name-server 208.67.220.220 outside
+ name-server 208.67.222.222 outside
+ domain-name ops.nrtelecom.net
+same-security-traffic permit inter-interface
+same-security-traffic permit intra-interface
+object network obj_any
+ subnet 0.0.0.0 0.0.0.0
+object network DID-VPN-NAT
+ subnet 10.17.21.0 255.255.255.0
+object network DID-VPN-USER
+ subnet 192.168.21.0 255.255.255.0
+object network DID-DC
+ host 10.16.22.50
+object network DID-MFA
+ host 10.17.20.246
+object network DID-ASG
+ host 10.16.22.44
+object network MAL-ASG
+ host 10.16.30.44
+object network MAL-DC
+ host 10.16.30.50
+object network DID-PAM
+ host 10.16.22.46
+object network MAL-PAM
+ host 10.16.30.46
+object network DID-ASG-NAT
+ host 194.72.85.173
+object network DID-ASR-MGT
+ host 10.17.20.253
+object network QRADAR
+ host 10.16.0.134
+object network DID-SNMP
+ host 10.16.80.35
+object network MAL-SNMP
+ host 10.16.88.35
+object service WinRM(https)
+ service tcp destination eq 5986 
+object service syslog
+ service tcp destination eq rsh 
+object service RDP
+ service tcp destination eq 3389 
+ description Remote Desktop Protocol
+object network MAL-PAM-DR
+ host 10.16.30.43
+object network MAL-MFA_TEMP
+ host 10.17.22.246
+object network SOK-MAL-OSS-LAN
+ subnet 172.18.16.0 255.255.255.0
+object network SMTP-RELAY
+ host 10.16.6.48
+ description OSS SMTP Relay Server - DIDV01LX93
+object network NRDT_Test_Ext_IP
+ host 34.251.66.80
+object network DIDV03LX160-NAT
+ host 194.72.85.165
+object network DIDV03LX160
+ host 10.16.7.231
+object network 34.241.49.74
+ host 34.241.49.74
+object network 54.77.230.250
+ host 54.77.230.250
+object network DIDC01LX120-NAT
+ host 194.72.85.163
+object network MALC01LX95-NAT
+ host 194.72.85.164
+object network 194.72.121.171
+ host 194.72.121.171
+object network 194.72.121.172
+ host 194.72.121.172
+object network DIDC01LX120
+ host 10.16.6.54
+object network MALC01LX95
+ host 10.16.142.53
+object network DID-INET-SNAT
+ host 10.17.20.192
+ description Internet Hide NAT Inbound
+object network 34.251.66.80
+ host 34.251.66.80
+object network NRDT_Test2_Ext_IP
+ host 54.78.39.33
+ description NRDT_Test2_Ext_IP
+object network DIDC01LX117
+ host 10.16.6.51
+object network DIDC01LX118
+ host 10.16.6.52
+object network MALC01LX92
+ host 10.16.142.50
+object network MALC01LX93
+ host 10.16.142.51
+object network nrdt.co.uk
+ fqdn v4 nrdt.co.uk
+object network test01.nrdt.co.uk
+ fqdn v4 test01.nrdt.co.uk
+object network DID-PRIME-RANGE
+ range 10.16.80.31 10.16.80.41
+ description Prime NGN NMS
+object network MAL-PRIME-RANGE
+ range 10.16.88.35 10.16.88.41
+ description Prime NGN NMS
+object network PROD_VMS
+ host 10.16.98.105
+object network 10.16.7.72
+ host 10.16.7.72
+object network 10.16.7.74
+ host 10.16.7.74
+object network 10.16.98.57
+ host 10.16.98.57
+object network 10.16.98.58
+ host 10.16.98.58
+object network 10.16.142.11
+ host 10.16.142.11
+object network 10.16.142.12
+ host 10.16.142.12
+object network 172.18.16.181
+ host 172.18.16.181
+object network 172.18.16.182
+ host 172.18.16.182
+object network 172.18.16.162
+ host 172.18.16.162
+object network 10.16.1.122
+ host 10.16.1.122
+object network 10.16.4.52
+ host 10.16.4.52
+object network 10.16.98.60
+ host 10.16.98.60
+object network 10.16.142.18
+ host 10.16.142.18
+object network NRDT_AWS-RDS_Servers
+ fqdn v4 nrdt-replica-01.ccitdtuer45t.eu-west-1.rds.amazonaws.com
+ description nrdt-replica-01.ccitdtuer45t.eu-west-1.rds.amazonaws.com
+object network DID-PAM-PRIVX
+ host 10.16.22.42
+object network MAL-PAM-PRIVX
+ host 10.16.30.42
+object service SSH-Alt
+ service tcp destination eq 2222 
+object service HTTPS-Alt
+ service tcp destination eq 8443 
+object network MANC-OSS-LAN
+ subnet 10.184.228.0 255.255.254.0
+object network DIDV03LX276
+ host 10.16.5.13
+object network DIDV03LX276-NAT
+ host 194.72.85.169
+object network NRDT_E2E_External_IP
+ host 54.246.107.239
+object network 3.121.141.63
+ host 3.121.141.63
+object network 3.121.172.166
+ host 3.121.172.166
+object network 3.121.204.16
+ host 3.121.204.16
+object network ipaasprod-apis.eu1.ccp.capgemini.com
+ fqdn v4 ipaasprod-apis.eu1.ccp.capgemini.com
+object network 18.185.133.146
+ host 18.185.133.146
+object network 52.59.79.110
+ host 52.59.79.110
+object network 18.195.135.95
+ host 18.195.135.95
+object network ipaastest-apis.eu1.ccp.capgemini.com
+ fqdn v4 ipaastest-apis.eu1.ccp.capgemini.com
+object network ARKF_CP_CAP_GEMINI_RDS_10.85.153.20
+ host 10.85.153.20
+object network ARKF_CP_CAP_GEMINI_RDS_10.85.153.19
+ host 10.85.153.19
+object network ARKF_CP_CAP_GEMINI_RDS_10.85.153.18
+ host 10.85.153.18
+object network ARKF_CP_CAP_GEMINI_RDS_10.84.153.18
+ host 10.84.153.18
+object network ARKF_CP_CAP_GEMINI_RDS_10.84.153.19
+ host 10.84.153.19
+object network ARKF_CP_CAP_GEMINI_RDS_10.84.153.20
+ host 10.84.153.20
+object network ARKC_SP_CAP_GEMINI_RDS_10.87.153.20
+ host 10.87.153.20
+object network ARKC_SP_CAP_GEMINI_RDS_10.87.153.19
+ host 10.87.153.19
+object network ARKC_SP_CAP_GEMINI_RDS_10.87.153.18
+ host 10.87.153.18
+object network ARKC_SP_CAP_GEMINI_RDS_10.86.153.20
+ host 10.86.153.20
+object network ARKC_SP_CAP_GEMINI_RDS_10.86.153.19
+ host 10.86.153.19
+object network ARKC_SP_CAP_GEMINI_RDS_10.86.153.18
+ host 10.86.153.18
+object network ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.85.153.11
+ host 10.85.153.11
+object network ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.85.153.10
+ host 10.85.153.10
+object network ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.84.153.11
+ host 10.84.153.11
+object network ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.84.153.10
+ host 10.84.153.10
+object network ARKC_SP_CAP_GEMINI_TEM_RELAY_10.87.153.11
+ host 10.87.153.11
+object network ARKC_SP_CAP_GEMINI_TEM_RELAY_10.87.153.10
+ host 10.87.153.10
+object network ARKC_SP_CAP_GEMINI_TEM_RELAY_10.86.153.11
+ host 10.86.153.11
+object network ARKC_SP_CAP_GEMINI_TEM_RELAY_10.86.153.10
+ host 10.86.153.10
+object network ARKF_CP_CAP_GEMINI_SPLUNK_UF_10.84.153.3
+ host 10.84.153.3
+object network ARKF_CP_CAP_GEMINI_SPLUNK_UF_10.84.153.2
+ host 10.84.153.2
+object network ARKC_SP_CAP_GEMINI_SPLUNK_UF_10.86.153.2
+ host 10.86.153.2
+object network ARKC_SP_CAP_GEMINI_SPLUNK_UF_10.86.153.3
+ host 10.86.153.3
+object network OSG-M_IPSEC_CAP_GEMINI_100.117.128.0
+ subnet 100.117.128.0 255.255.192.0
+ description OSG-M_IPSEC_CAP_GEMINI_100.117.128.0/18
+object network OSG-M_IPSEC_CAP_GEMINI_67.204.110.0
+ subnet 67.204.110.0 255.255.255.0
+ description OSG-M_IPSEC_CAP_GEMINI_67.204.110.0/24
+object network OSG-D_IPSEC_CAP_GEMINI_67.204.115.0
+ subnet 67.204.115.0 255.255.255.0
+ description OSG-D_IPSEC_CAP_GEMINI_67.204.115.0/24
+object network OSG-D_IPSEC_CAP_GEMINI_100.117.128.0
+ subnet 100.117.128.0 255.255.192.0
+object network ARKC_SP_CAP_GEMINI_RDS_10.84.153.18
+ host 10.84.153.18
+object network ARKC_SP_CAP_GEMINI_RDS_10.84.153.19
+ host 10.84.153.19
+object network ARKC_SP_CAP_GEMINI_RDS_10.84.153.20
+ host 10.84.153.20
+object network ARKC_SP_CAP_GEMINI_OPSVIEW_10.86.153.26
+ host 10.86.153.26
+object network ARKC_SP_CAP_GEMINI_OPSVIEW_10.86.153.27
+ host 10.86.153.27
+object network ARKC_SP_CAP_GEMINI_OPSVIEW_10.86.153.28
+ host 10.86.153.28
+object network ARKF_CP_CAP_GEMINI_OPSVIEW_10.84.153.26
+ host 10.84.153.26
+object network ARKF_CP_CAP_GEMINI_OPSVIEW_10.84.153.27
+ host 10.84.153.27
+object network ARKF_CP_CAP_GEMINI_OPSVIEW_10.84.153.28
+ host 10.84.153.28
+object network ARKC_SP_CAP_GEMINI_OPSVIEW_10.86.153.29
+ host 10.86.153.29
+object network nrttelecoms.atlassian.net
+ fqdn v4 nrttelecoms.atlassian.net
+object network nrttelecoms-sanbox-430.atlassian.net
+ fqdn v4 nrttelecoms-sanbox-430.atlassian.net
+object network Atlassian_Cloud_13.52.5.96
+ subnet 13.52.5.96 255.255.255.240
+object network Atlassian_Cloud_13.236.8.224
+ subnet 13.236.8.224 255.255.255.240
+object network Atlassian_Cloud_18.136.214.96
+ subnet 18.136.214.96 255.255.255.240
+object network Atlassian_Cloud_18.184.99.224
+ subnet 18.184.99.224 255.255.255.240
+object network Atlassian_Cloud_18.234.32.224
+ subnet 18.234.32.224 255.255.255.240
+object network Atlassian_Cloud_18.246.31.224
+ subnet 18.246.31.224 255.255.255.240
+object network Atlassian_Cloud_52.215.192.224
+ subnet 52.215.192.224 255.255.255.240
+object network Atlassian_Cloud_104.192.137.240
+ subnet 104.192.137.240 255.255.255.240
+object network Atlassian_Cloud_104.192.138.240
+ subnet 104.192.138.240 255.255.255.240
+object network Atlassian_Cloud_104.192.140.240
+ subnet 104.192.140.240 255.255.255.240
+object network Atlassian_Cloud_104.192.142.240
+ subnet 104.192.142.240 255.255.255.240
+object network Atlassian_Cloud_104.192.143.240
+ subnet 104.192.143.240 255.255.255.240
+object network Atlassian_Cloud_185.166.143.240
+ subnet 185.166.143.240 255.255.255.240
+object network Atlassian_Cloud_185.166.142.240
+ subnet 185.166.142.240 255.255.255.240
+object network Atlassian_Cloud_3.26.128.128
+ subnet 3.26.128.128 255.255.255.192
+object network Atlassian_Cloud_3.69.198.0
+ subnet 3.69.198.0 255.255.255.192
+object network Atlassian_Cloud_3.99.65.0
+ subnet 3.99.65.0 255.255.255.192
+object network Atlassian_Cloud_3.101.177.128
+ subnet 3.101.177.128 255.255.255.192
+object network Atlassian_Cloud_3.109.72.192
+ subnet 3.109.72.192 255.255.255.192
+object network Atlassian_Cloud_3.251.213.64
+ subnet 3.251.213.64 255.255.255.192
+object network Atlassian_Cloud_13.52.5.0
+ subnet 13.52.5.0 255.255.255.128
+object network Atlassian_Cloud_13.214.1.0
+ subnet 13.214.1.0 255.255.255.192
+object network Atlassian_Cloud_13.236.8.128
+ subnet 13.236.8.128 255.255.255.128
+object network Atlassian_Cloud_15.228.142.0
+ subnet 15.228.142.0 255.255.255.192
+object network Atlassian_Cloud_18.136.214.0
+ subnet 18.136.214.0 255.255.255.128
+object network Atlassian_Cloud_18.170.192.128
+ subnet 18.170.192.128 255.255.255.192
+object network Atlassian_Cloud_18.184.99.128
+ subnet 18.184.99.128 255.255.255.128
+object network Atlassian_Cloud_18.205.93.0
+ subnet 18.205.93.0 255.255.255.224
+object network Atlassian_Cloud_18.234.32.128
+ subnet 18.234.32.128 255.255.255.128
+object network Atlassian_Cloud_18.246.31.128
+ subnet 18.246.31.128 255.255.255.128
+object network Atlassian_Cloud_34.199.54.113
+ subnet 34.199.54.113 255.255.255.255
+object network Atlassian_Cloud_34.216.18.129
+ subnet 34.216.18.129 255.255.255.255
+object network Atlassian_Cloud_34.218.156.209
+ subnet 34.218.156.209 255.255.255.255
+object network Atlassian_Cloud_34.218.168.212
+ subnet 34.218.168.212 255.255.255.255
+object network Atlassian_Cloud_34.232.25.90
+ subnet 34.232.25.90 255.255.255.255
+object network Atlassian_Cloud_34.232.119.183
+ subnet 34.232.119.183 255.255.255.255
+object network Atlassian_Cloud_34.236.25.177
+ subnet 34.236.25.177 255.255.255.255
+object network Atlassian_Cloud_35.75.131.128
+ subnet 35.75.131.128 255.255.255.192
+object network Atlassian_Cloud_35.84.197.12
+ subnet 35.84.197.128 255.255.255.192
+object network Atlassian_Cloud_35.155.178.254
+ subnet 35.155.178.254 255.255.255.255
+object network Atlassian_Cloud_35.160.177.10
+ subnet 35.160.177.10 255.255.255.255
+object network Atlassian_Cloud_35.171.175.212
+ subnet 35.171.175.212 255.255.255.255
+object network Atlassian_Cloud_44.197.146.192
+ subnet 44.197.146.192 255.255.255.192
+object network Atlassian_Cloud_52.41.219.63
+ subnet 52.41.219.63 255.255.255.255
+object network Atlassian_Cloud_52.54.90.98
+ subnet 52.54.90.98 255.255.255.255
+object network Atlassian_Cloud_52.202.195
+ subnet 52.202.195.162 255.255.255.255
+object network Atlassian_Cloud_52.203.14.55
+ subnet 52.203.14.55 255.255.255.255
+object network Atlassian_Cloud_52.204.96.37
+ subnet 52.204.96.37 255.255.255.255
+object network Atlassian_Cloud_52.215.192.128
+ subnet 52.215.192.128 255.255.255.128
+object network Atlassian_Cloud_104.192.136.0
+ subnet 104.192.136.0 255.255.248.0
+object network Atlassian_Cloud_104.192.136.240
+ subnet 104.192.136.240 255.255.255.240
+object network Atlassian_Cloud_185.166.140.0
+ subnet 185.166.140.0 255.255.252.0
+object network Atlassian_Cloud_3.216.235.48
+ subnet 3.216.235.48 255.255.255.255
+object network Atlassian_Cloud_34.231.96.243
+ subnet 34.231.96.243 255.255.255.255
+object network Atlassian_Cloud_44.199.3.254
+ subnet 44.199.3.254 255.255.255.255
+object network Atlassian_Cloud_174.129.205.191
+ subnet 174.129.205.191 255.255.255.255
+object network Atlassian_Cloud_44.199.127.226
+ subnet 44.199.127.226 255.255.255.255
+object network Atlassian_Cloud_44.199.45.64
+ subnet 44.199.45.64 255.255.255.255
+object network Atlassian_Cloud_3.221.151.112
+ subnet 3.221.151.112 255.255.255.255
+object network Atlassian_Cloud_52.205.184.192
+ subnet 52.205.184.192 255.255.255.255
+object network Atlassian_Cloud_52.72.137.240
+ subnet 52.72.137.240 255.255.255.255
+object network DIDC01LX133
+ host 10.16.6.15
+object network 51.91.73.159
+ host 51.91.73.159
+object network nrt-preprod.lockensmartaccess.com
+ fqdn v4 nrt-preprod.lockensmartaccess.com
+object network networkrailtelecom.lockensmartaccess.com
+ fqdn v4 networkrailtelecom.lockensmartaccess.com
+object network is.lockensmartaccess.com
+ fqdn v4 is.lockensmartaccess.com
+object network pre-is.lockensmartaccess.com
+ fqdn v4 pre-is.lockensmartaccess.com
+object network MARCH-23_91.240.118.9
+ host 91.240.118.9
+ description Malicious address added 06-03-2023
+object network MALICIOUS_194.28.115.124
+ host 194.28.115.124
+object network MALICIOUS_37.44.255.197
+ host 37.44.255.197
+object network MALICIOUS_62.233.50.102
+ host 62.233.50.102
+object network MALICIOUS_62.233.50.11
+ host 62.233.50.11
+object network MALICIOUS_62.233.50.13
+ host 62.233.50.13
+object network MALICIOUS_62.233.50.17
+ host 62.233.50.17
+object network MALICIOUS_62.233.50.19
+ host 62.233.50.19
+object network MALICIOUS_91.240.118.9
+ host 91.240.118.9
+object network MALICIOUS_94.232.43.250
+ host 94.232.43.250
+object network MALICIOUS_185.81.68.46
+ host 185.81.68.46
+object network MALICIOUS_185.81.68.74
+ host 185.81.68.74
+object network MALICIOUS_185.81.68.75
+ host 185.81.68.75
+object network MALICIOUS_185.92.72.135
+ host 185.92.72.135
+object network MALICIOUS_193.233.138.79
+ host 193.233.138.79
+object network MALICIOUS_79.124.59.254
+ host 79.124.59.254
+object network MALICIOUS_78.128.112.202
+ host 78.128.112.202
+object network MALICIOUS_45.227.255.213
+ host 45.227.255.213
+object network MALICIOUS_5.188.206.83
+ host 5.188.206.83
+object network MALICIOUS_78.128.112.137
+ host 78.128.112.137
+object network MALICIOUS_147.78.47.243
+ host 147.78.47.243
+object network MALICIOUS_5.8.18.242
+ host 5.8.18.242
+object network MALICIOUS_138.99.216.146
+ host 138.99.216.146
+object network MALICIOUS_5.188.206.84
+ host 5.188.206.84
+object network MALICIOUS_5.188.206.92
+ host 5.188.206.92
+object network MALICIOUS_5.188.206.88
+ host 5.188.206.88
+object network MALICIOUS_5.188.206.93
+ host 5.188.206.93
+object network MALICIOUS_23.26.229.153
+ host 23.26.229.153
+object network MALICIOUS_45.143.203.21
+ host 45.143.203.21
+object network MALICIOUS_45.67.213.122
+ host 45.67.213.122
+object network MALICIOUS_45.66.209.178
+ host 45.66.209.178
+object network MALICIOUS_45.145.129.166
+ host 45.145.129.166
+object network MALICIOUS_45.227.252.236
+ host 45.227.252.236
+object network MALICIOUS_45.227.252.252
+ host 45.227.252.252
+object network MALICIOUS_45.144.112.202
+ host 45.144.112.202
+object network MALICIOUS_62.233.50.101
+ host 62.233.50.101
+object network MALICIOUS_62.233.51.37
+ host 62.233.51.37
+object network MALICIOUS_85.208.86.168
+ host 85.208.86.168
+object network MALICIOUS_85.209.150.119
+ host 85.209.150.119
+object network MALICIOUS_85.239.58.179
+ host 85.239.58.179
+object network MALICIOUS_85.208.211.82
+ host 85.208.211.82
+object network MALICIOUS_86.142.136.210
+ host 86.142.136.210
+object network MALICIOUS_88.218.67.58
+ host 88.218.67.58
+object network MALICIOUS_90.205.116.194
+ host 90.205.116.194
+object network MALICIOUS_90.209.203.216
+ host 90.209.203.216
+object network MALICIOUS_91.243.92.214
+ host 91.243.92.214
+object network MALICIOUS_91.188.247.22
+ host 91.188.247.22
+object network MALICIOUS_92.38.169.187
+ host 92.38.169.187
+object network MALICIOUS_93.177.117.214
+ host 93.177.117.214
+object network MALICIOUS_117.196.169.108
+ host 117.196.169.108
+object network MALICIOUS_122.175.119.72
+ host 122.175.119.72
+object network MALICIOUS_141.11.87.216
+ host 141.11.87.216
+object network MALICIOUS_147.78.47.240
+ host 147.78.47.240
+object network MALICIOUS_149.18.29.151
+ host 149.18.29.151
+object network MALICIOUS_149.18.28.35
+ host 149.18.28.35
+object network MALICIOUS_149.18.30.53
+ host 149.18.30.53
+object network MALICIOUS_176.126.111.22
+ host 176.126.111.22
+object network MALICIOUS_176.111.174.243
+ host 176.111.174.243
+object network MALICIOUS_185.88.37.251
+ host 185.88.37.251
+object network MALICIOUS_188.123.230.87
+ host 188.123.230.87
+object network MALICIOUS_194.110.203.51
+ host 194.110.203.51
+object network MALICIOUS_194.110.203.68
+ host 194.110.203.68
+object network MALICIOUS_213.166.78.51
+ host 213.166.78.51
+object network MALICIOUS_213.139.69.118
+ host 213.139.69.118
+object network MALICIOUS_5.8.18.236
+ host 5.8.18.236
+object network MALICIOUS_5.8.18.117
+ host 5.8.18.117
+object network MALICIOUS_45.227.255.156
+ host 45.227.255.156
+object network MALICIOUS_45.227.252.241
+ host 45.227.252.241
+object network MALICIOUS_45.227.252.237
+ host 45.227.252.237
+object network MALICIOUS_45.148.125.190
+ host 45.148.125.190
+object network MALICIOUS_46.161.27.155
+ host 46.161.27.155
+object network MALICIOUS_46.161.27.123
+ host 46.161.27.123
+object network MALICIOUS_62.233.50.25
+ host 62.233.50.25
+object network MALICIOUS_62.233.50.23
+ host 62.233.50.23
+object network MALICIOUS_77.83.36.69
+ host 77.83.36.69
+object network MALICIOUS_78.128.112.211
+ host 78.128.112.211
+object network MALICIOUS_78.128.112.195
+ host 78.128.112.195
+object network MALICIOUS_78.128.112.141
+ host 78.128.112.141
+object network MALICIOUS_78.128.112.138
+ host 78.128.112.138
+object network MALICIOUS_80.66.76.18
+ host 80.66.76.18
+object network MALICIOUS_80.66.66.175
+ host 80.66.66.175
+object network MALICIOUS_85.209.150.116
+ host 85.209.150.116
+object network MALICIOUS_88.214.26.37
+ host 88.214.26.3
+object network MALICIOUS_88.214.26.27
+ host 88.214.26.27
+object network MALICIOUS_91.243.94.36
+ host 91.243.94.36
+object network MALICIOUS_91.242.228.136
+ host 91.242.228.136
+object network MALICIOUS_92.255.57.202
+ host 92.255.57.202
+object network MALICIOUS_92.118.36.201
+ host 92.118.36.201
+object network MALICIOUS_94.232.47.80
+ host 94.232.47.80
+object network MALICIOUS_122.172.84.233
+ host 122.172.84.233
+object network MALICIOUS_147.78.47.245
+ host 147.78.47.245
+object network MALICIOUS_149.18.31.206
+ host 149.18.31.206
+object network MALICIOUS_152.89.196.228
+ host 152.89.196.228
+object network MALICIOUS_152.89.196.224
+ host 152.89.196.224
+object network MALICIOUS_152.89.196.223
+ host 152.89.196.223
+object network MALICIOUS_152.89.196.186
+ host 152.89.196.186
+object network MALICIOUS_179.60.150.150
+ host 179.60.150.150
+object network MALICIOUS_179.60.146.51
+ host 179.60.146.51
+object network MALICIOUS_185.161.248.13
+ host 185.161.248.13
+object network MALICIOUS_193.29.13.152
+ host 193.29.13.152
+object network MALICIOUS_194.110.203.69
+ host 194.110.203.69
+object network MALICIOUS_5.8.18.116
+ host 5.8.18.116
+object network MALICIOUS_45.67.212.178
+ host 45.67.212.178
+object network MALICIOUS_183.136.225.32
+ host 183.136.225.32
+object network MALICIOUS_185.157.162.19
+ host 185.157.162.19
+object network MALICIOUS_185.220.101.22
+ host 185.220.101.22
+object network MALICIOUS_45.81.39.4
+ host 45.81.39.4
+object network MALICIOUS_179.60.147.4
+ host 179.60.147.4
+object network MALICIOUS_176.113.115.103
+ host 176.113.115.103
+object network MALICIOUS_79.124.59.86
+ host 79.124.59.86
+object network MALICIOUS_77.83.36.20
+ host 77.83.36.20
+object network MALICIOUS_92.118.36.213
+ host 92.118.36.213
+object network MALICIOUS_31.184.236.78
+ host 31.184.236.78
+object network MALICIOUS_31.184.236.31
+ host 31.184.236.31
+object network MALICIOUS_188.123.230.74
+ host 188.123.230.74
+object network MALICIOUS_109.206.242.48
+ host 109.206.242.48
+object network MALICIOUS_191.221.196.119
+ host 191.221.196.119
+object network MALICIOUS_185.220.101.14
+ host 185.220.101.14
+object network MALICIOUS_109.70.100.9
+ host 109.70.100.9
+object network MALICIOUS_176.111.174.123
+ host 176.111.174.123
+object network MALICIOUS_194.26.135.67
+ host 194.26.135.67
+object network ARKF_OKMS-REF-KMC_10.85.124.164
+ host 10.85.124.164
+object network ARKF_OKMS-REF-PKI-RA_10.85.124.8
+ host 10.85.124.8
+object network ARKF_OKMS-REF-PKI-VA_10.85.124.16
+ host 10.85.124.16
+object network ENIF_LAB-OBU_10.159.0.41
+ host 10.159.0.41
+object network ENIF_LAB-RBC_10.159.0.44
+ host 10.159.0.44
+object network MALICIOUS_188.241.177.232
+ host 188.241.177.232
+object network MALICIOUS_156.146.40.206
+ host 156.146.40.206
+object network MALICIOUS_82.68.81.121
+ host 82.68.81.121
+object network MALICIOUS_79.124.54.158
+ host 79.124.54.158
+object network DIDC-SERV-15
+ host 10.16.80.69
+ description DIDC JumpBox
+object network DIDC_10.16.98.78
+ host 10.16.98.78
+object network DIDC_SOLARWINDS_10.16.98.78
+ host 10.16.98.78
+object network DIDC_SOLARWINDS_10.16.98.79
+ host 10.16.98.79
+object network DIDC_SOLARWINDS_10.16.98.80
+ host 10.16.98.80
+object network DIDC_SOLARWINDS_10.16.98.81
+ host 10.16.98.81
+object network DIDC_SOLARWINDS_10.16.98.82
+ host 10.16.98.82
+object network DIDC_SOLARWINDS_10.16.98.83
+ host 10.16.98.83
+object network DIDC_SOLARWINDS_10.16.98.90
+ host 10.16.98.90
+object network DIDC_SOLARWINDS_10.16.98.91
+ host 10.16.98.91
+object network DIDC_SOLARWINDS_10.16.98.92
+ host 10.16.98.92
+object network MALC_SOLARWINDS_10.16.142.111
+ host 10.16.142.111
+object network MALC_SOLARWINDS_10.16.142.112
+ host 10.16.142.112
+object network MALC_SOLARWINDS_10.16.142.113
+ host 10.16.142.113
+object network MALC_SOLARWINDS_10.16.142.114
+ host 10.16.142.114
+object network MALC_SOLARWINDS_10.16.142.115
+ host 10.16.142.115
+object network MALC_SOLARWINDS_10.16.142.116
+ host 10.16.142.116
+object network MALC_SOLARWINDS_10.16.142.129
+ host 10.16.142.129
+object network MALC_SOLARWINDS_10.16.142.130
+ host 10.16.142.130
+object network MALC_SOLARWINDS_10.16.142.131
+ host 10.16.142.131
+object network DIDC_SolarWinds-1
+ range 10.16.98.78 10.16.98.83
+object network DIDC_SolarWinds-2
+ range 10.16.98.90 10.16.98.92
+object network MALC_SolarWinds-1
+ range 10.16.142.111 10.16.142.116
+object network MALC_SolarWinds-2
+ range 10.16.142.129 10.16.142.131
+object network MALICIOUS_62.122.184.86
+ host 91.92.255.67
+object network MALICIOUS_188.123.230.81
+ host 188.123.230.81
+object network MALICIOUS_79.124.59.158
+ host 79.124.59.158
+object network MALICIOUS_194.32.146.134
+ host 194.32.146.134
+object network MALICIOUS_104.156.155.7
+ host 104.156.155.7
+object network MALICIOUS_45.134.144.238
+ host 45.134.144.238
+object network MALICIOUS_109.123.249.83
+ host 109.123.249.83
+object network MALICIOUS_152.89.198.15
+ host 152.89.198.15
+object network MALICIOUS_85.192.63.25
+ host 85.192.63.25
+object network MALICIOUS_194.26.135.153
+ host 194.26.135.153
+object network MALICIOUS_194.26.135.140
+ host 194.26.135.140
+object network MALICIOUS_194.26.135.152
+ host 194.26.135.152
+object network MALICIOUS_194.233.96.88
+ host 194.233.96.88
+object network MALICIOUS_82.180.149.44
+ host 82.180.149.44
+object network MALICIOUS_194.26.135.150
+ host 194.26.135.150
+object network MALICIOUS_194.26.135.149
+ host 194.26.135.149
+object network MALICIOUS_194.26.135.148
+ host 194.26.135.148
+object network MALICIOUS_79.133.56.60
+ host 85.192.63.25
+object network MALICIOUS_79.110.48.40
+ host 79.110.48.40
+object network MALICIOUS_190.211.252.224
+ host 190.211.252.224
+object network MALICIOUS_194.26.135.185
+ host 194.26.135.185
+object network MALICIOUS_194.26.135.167
+ host 194.26.135.167
+object network MALICIOUS_194.26.135.177
+ host 194.26.135.177
+object network MALICIOUS_89.248.165.30
+ host 89.248.165.30
+object network MALICIOUS_142.234.157.39
+ host 142.234.157.39
+object network MALICIOUS_62.122.184.231
+ host 62.122.184.231
+object network MALICIOUS_77.75.230.41
+ host 77.75.230.41
+object network MALICIOUS_94.131.114.79
+ host 94.131.114.79
+object network MALICIOUS_138.124.184.128
+ host 138.124.184.128
+object network MALICIOUS_77.91.100.47
+ host 77.91.100.47
+object network MALICIOUS_94.131.13.27
+ host 94.131.13.27
+object network MALICIOUS_45.89.55.111
+ host 45.89.55.111
+object network MALICIOUS_5.182.38.191
+ host 5.182.38.191
+object network MALICIOUS_185.74.222.37
+ host 185.74.222.37
+object network MALICIOUS_45.67.34.203
+ host 45.67.34.203
+object network MALICIOUS_95.164.11.73
+ host 95.164.11.73
+object network MALICIOUS_194.26.135.111
+ host 194.26.135.111
+object network MALICIOUS_94.142.138.73
+ host 94.142.138.73
+object network MALICIOUS_102.129.152.150
+ host 102.129.152.150
+object network MALICIOUS_179.43.133.218
+ host 179.43.133.218
+object network MALICIOUS_94.131.8.158
+ host 94.131.8.158
+object network MALICIOUS_78.46.85.49
+ host 78.46.85.49
+object network MALICIOUS_81.17.26.130
+ host 81.17.26.130
+object network MALICIOUS_94.130.54.173
+ host 94.130.54.173
+object network MALICIOUS_179.43.191.154
+ host 179.43.191.154
+object network MALICIOUS_146.19.106.36
+ host 146.19.106.36
+object network MALICIOUS_95.164.44.57
+ host 95.164.44.57
+object network MALICIOUS_31.7.62.138
+ host 31.7.62.138
+object network MALICIOUS_179.43.174.10
+ host 179.43.174.10
+object network MALICIOUS_146.19.170.59
+ host 146.19.170.59
+object network MALICIOUS_31.184.236.88
+ host 31.184.236.88
+object network MALICIOUS_45.8.147.10
+ host 45.8.147.10
+object network MALICIOUS_194.165.59.145
+ host 194.165.59.145
+object network MALICIOUS_5.252.23.46
+ host 5.252.23.46
+object network MALICIOUS_190.211.252.42
+ host 190.211.252.42
+object network MALICIOUS_159.69.73.215
+ host 159.69.73.215
+object network MALICIOUS_45.159.251.163
+ host 45.159.251.163
+object network MALICIOUS_45.84.155.60
+ host 45.84.155.60
+object network MALICIOUS_5.182.36.153
+ host 5.182.36.153
+object network MALICIOUS_45.87.155.60
+ host 45.87.155.60
+object network MALICIOUS_45.153.230.66
+ host 45.153.230.66
+object network MALICIOUS_179.43.190.98
+ host 179.43.190.98
+object network MALICIOUS_195.201.111.104
+ host 195.201.111.104
+object network MALICIOUS_159.69.64.143
+ host 159.69.64.143
+object network MALICIOUS_138.199.18.63
+ host 138.199.18.63
+object network MALICIOUS_5.182.38.62
+ host 5.182.38.62
+object network MALICIOUS_77.91.103.158
+ host 77.91.103.158
+object network MALICIOUS_95.164.45.188
+ host 95.164.45.188
+object network MALICIOUS_5.181.21.155
+ host 5.181.21.155
+object network MALICIOUS_94.131.105.251
+ host 94.131.105.251
+object network MALICIOUS_79.110.48.131
+ host 79.110.48.131
+object network MALICIOUS_117.99.197.135
+ host 117.99.197.135
+object network MALICIOUS_94.131.9.62
+ host 94.131.9.62
+object network MALICIOUS_95.164.19.138
+ host 95.164.19.138
+object network MALICIOUS_213.138.116.80
+ host 213.138.116.80
+object network MALICIOUS_194.26.192.93
+ host 194.26.192.93
+object network MALICIOUS_193.109.85.29
+ host 193.109.85.29
+object network MALICIOUS_83.97.73.87
+ host 83.97.73.87
+object network MALICIOUS_185.216.140.209
+ host 185.216.140.209
+object network FBO_CAPKI-HSM-MGMT_10.84.159.2
+ host 10.84.159.2
+ description FBO-D1-RKM00001 mgmt IP in Farnborough
+object network CRS_CAPKI-HSM-MGMT_10.86.159.2
+ host 10.86.159.2
+ description CRS-D1-RKM00001 mgmt IP in Corsham
+object network FBO_SOLARWINDS-REMOTE-CONT_10.84.59.130
+ host 10.84.59.130
+ description Solarwinds Platform Remote Controller based in Farnborough FBO-D1-OLM01001
+object network CRS_SOLARWINDS-REMOTE-CONT_10.86.59.130
+ host 10.86.59.130
+ description Solarwinds Platform Remote Controller based in Corsham CRS-D1-OLM01001
+object network THALES_MGMT_WS1_10.159.0.67
+ host 10.159.0.67
+ description Thales management workstation 1
+object network THALES_MGMT_WS2_10.159.0.68
+ host 10.159.0.68
+ description Thales management workstation 2
+object network THALES_SOLARWINDS_10.159.0.69
+ host 10.159.0.69
+ description Thales Solarwinds central platform
+object network MALICIOUS_89.213.6.106
+ host 89.213.6.106
+object network MALICIOUS_89.213.6.54
+ host 89.213.6.54
+object network MALICIOUS_5.252.71.144
+ host 5.252.71.144
+object network MALICIOUS_89.213.6.223
+ host 89.213.6.223
+object network MALICIOUS_185.138.235.175
+ host 185.138.235.175
+object network MALICIOUS_89.213.6.217
+ host 89.213.6.217
+object network MALICIOUS_89.213.6.206
+ host 89.213.6.206
+object network MALICIOUS_89.213.6.194
+ host 89.213.6.194
+object network MALICIOUS_89.213.6.161
+ host 89.213.6.161
+object network MALICIOUS_89.213.6.4
+ host 89.213.6.4
+object network MALICIOUS_5.253.39.3
+ host 5.253.39.3
+object network MALICIOUS_89.213.6.215
+ host 89.213.6.215
+object network MALICIOUS_91.239.62.48
+ host 91.239.62.48
+object network MALICIOUS_89.213.6.205
+ host 89.213.6.205
+object network MALICIOUS_89.213.6.74
+ host 89.213.6.74
+object network MALICIOUS_185.138.235.77
+ host 185.138.235.77
+object network MALICIOUS_5.252.71.129
+ host 5.252.71.129
+object network MALICIOUS_89.213.6.246
+ host 89.213.6.246
+object network MALICIOUS_195.242.240.140
+ host 195.242.240.140
+object network MALICIOUS_89.213.6.224
+ host 89.213.6.224
+object network MALICIOUS_5.252.71.199
+ host 5.252.71.199
+object network MALICIOUS_185.138.235.121
+ host 185.138.235.121
+object network MALICIOUS_89.213.6.43
+ host 89.213.6.43
+object network MALICIOUS_5.252.71.84
+ host 5.252.71.84
+object network MALICIOUS_195.242.240.174
+ host 195.242.240.174
+object network MALICIOUS_147.78.47.47
+ host 147.78.47.47
+object network MALICIOUS_46.21.250.200
+ host 46.21.250.200
+object network MALICIOUS_78.128.112.78
+ host 78.128.112.78
+object network MALICIOUS_31.184.236.15
+ host 31.184.236.15
+object network MALICIOUS_122.161.53.136
+ host 122.161.53.136
+object network MALICIOUS_31.184.236.64
+ host 31.184.236.64
+object network MALICIOUS_31.184.236.118
+ host 31.184.236.118
+object network MALICIOUS_89.213.6.236
+ host 89.213.6.236
+object network MALICIOUS_89.213.6.97
+ host 89.213.6.97
+object network MALICIOUS_185.138.235.3
+ host 185.138.235.3
+object network MALICIOUS_89.213.6.241
+ host 89.213.6.241
+object network MALICIOUS_193.29.13.166
+ host 193.29.13.166
+object network MALICIOUS_213.86.175.34
+ host 213.86.175.34
+object network MALICIOUS_37.152.228.141
+ host 37.152.228.141
+object network MALICIOUS_147.161.145.106
+ host 147.161.145.106
+object network MALICIOUS_31.94.62.248
+ host 31.94.62.248
+object network MALICIOUS_82.0.139.175
+ host 82.0.139.175
+object network MALICIOUS_5.182.38.88
+ host 5.182.38.88
+object network MALICIOUS_5.181.21.141
+ host 5.181.21.141
+object network MALICIOUS_95.164.11.49
+ host 95.164.11.49
+object network MALICIOUS_45.67.35.89
+ host 45.67.35.89
+object network MALICIOUS_94.131.97.159
+ host 94.131.97.159
+object network MALICIOUS_185.231.207.31
+ host 185.231.207.31
+object network MALICIOUS_176.120.74.28
+ host 176.120.74.28
+object network MALICIOUS_95.164.19.53
+ host 95.164.19.53
+object network MALICIOUS_95.164.37.31
+ host 95.164.37.31
+object network MALICIOUS_89.213.6.209
+ host 89.213.6.209
+object network MALICIOUS_89.213.6.51
+ host 89.213.6.51
+object network MALICIOUS_89.213.6.91
+ host 89.213.6.91
+object network MALICIOUS_185.138.235.44
+ host 185.138.235.44
+object network MALICIOUS_89.213.6.107
+ host 89.213.6.107
+object network MALICIOUS_91.239.62.38
+ host 91.239.62.38
+object network MALICIOUS_89.213.6.248
+ host 89.213.6.248
+object network MALICIOUS_89.213.6.171
+ host 89.213.6.171
+object network MALICIOUS_185.138.235.6
+ host 185.138.235.6
+object network MALICIOUS_45.152.178.144
+ host 45.152.178.144
+object network MALICIOUS_45.150.65.173
+ host 45.150.65.173
+object network MALICIOUS_94.131.8.51
+ host 94.131.8.51
+object network MALICIOUS_94.131.102.14
+ host 94.131.102.14
+object network MALICIOUS_191.101.234.76
+ host 191.101.234.76
+object network MALICIOUS_149.57.16.177
+ host 149.57.16.177
+object network MALICIOUS_185.232.67.7
+ host 185.232.67.7
+object network MALICIOUS_203.99.207.50
+ host 203.99.207.50
+object network MALICIOUS_166.1.14.235
+ host 166.1.14.235
+object network MALICIOUS_64.113.1.149
+ host 64.113.1.149
+object network MALICIOUS_185.196.8.45
+ host 185.196.8.45
+object network MALICIOUS_212.107.27.185"
+object network MALICIOUS_81.22.44.56
+ host 81.22.44.56
+object network MALICIOUS_91.227.155.9
+ host 91.227.155.9
+object network MALICIOUS_212.107.27.185
+ host 212.107.27.185
+object network MALICIOUS_212.107.27.186
+ host 212.107.27.186
+object network MALICIOUS_212.107.27.184
+ host 212.107.27.184
+object network MALICIOUS_212.107.27.187
+ host 212.107.27.187
+object network MALICIOUS_212.107.27.189
+ host 212.107.27.189
+object network MALICIOUS_212.107.27.188
+ host 212.107.27.188
+object network MALICIOUS_212.107.27.191
+ host 212.107.27.191
+object network MALICIOUS_212.107.27.195
+ host 212.107.27.195
+object network MALICIOUS_212.107.27.193
+ host 212.107.27.193
+object network MALICIOUS_212.107.27.196
+ host 212.107.27.196
+object network MALICIOUS_212.107.27.190
+ host 212.107.27.190
+object network MALICIOUS_212.107.27.192
+ host 212.107.27.192
+object network MALICIOUS_212.107.27.197
+ host 212.107.27.197
+object network MALICIOUS_212.107.27.194
+ host 212.107.27.194
+object network MALICIOUS_212.107.27.198
+ host 212.107.27.198
+object network MALICIOUS_212.107.27.199
+ host 212.107.27.199
+object network MALICIOUS_212.107.27.204
+ host 212.107.27.204
+object network MALICIOUS_212.107.27.209
+ host 212.107.27.209
+object network MALICIOUS_212.107.27.211
+ host 212.107.27.211
+object network MALICIOUS_212.107.27.205
+ host 212.107.27.205
+object network MALICIOUS_212.107.27.212
+ host 212.107.27.212
+object network MALICIOUS_212.107.27.216
+ host 212.107.27.216
+object network MALICIOUS_212.107.27.215
+ host 212.107.27.215
+object network MALICIOUS_212.107.27.213
+ host 212.107.27.213
+object network MALICIOUS_212.107.27.214
+ host 212.107.27.214
+object network MALICIOUS_212.107.27.217
+ host 212.107.27.217
+object network MALICIOUS_212.107.27.218
+ host 212.107.27.218
+object network MALICIOUS_212.107.27.207
+ host 212.107.27.207
+object network MALICIOUS_212.107.27.208
+ host 212.107.27.208
+object network MALICIOUS_212.107.27.206
+ host 212.107.27.206
+object network MALICIOUS_212.107.27.210
+ host 212.107.27.210
+object network MALICIOUS_212.107.27.202
+ host 212.107.27.202
+object network MALICIOUS_212.107.27.203
+ host 212.107.27.203
+object network MALICIOUS_212.107.27.201
+ host 212.107.27.201
+object network MALICIOUS_91.227.155.123
+ host 91.227.155.123
+object network MALICIOUS_91.227.155.76
+ host 91.227.155.76
+object network MALICIOUS_91.227.155.232
+ host 91.227.155.232
+object network MALICIOUS_91.227.155.215
+ host 91.227.155.215
+object network MALICIOUS_91.227.155.221
+ host 91.227.155.221
+object network MALICIOUS_91.227.155.173
+ host 91.227.155.173
+object network MALICIOUS_91.227.155.230
+ host 91.227.155.230
+object network MALICIOUS_91.227.155.43
+ host 91.227.155.43
+object network MALICIOUS_91.227.155.199
+ host 91.227.155.199
+object network MALICIOUS_91.227.155.166
+ host 91.227.155.166
+object network MALICIOUS_91.227.155.150
+ host 91.227.155.150
+object network MALICIOUS_91.227.155.45
+ host 91.227.155.45
+object network MALICIOUS_91.227.155.73
+ host 91.227.155.73
+object network MALICIOUS_91.227.155.7
+ host 91.227.155.7
+object network MALICIOUS_91.227.155.179
+ host 91.227.155.179
+object network MALICIOUS_91.227.155.32
+ host 91.227.155.32
+object network MALICIOUS_91.227.155.158
+ host 91.227.155.158
+object network MALICIOUS_91.227.155.185
+ host 91.227.155.185
+object network MALICIOUS_91.227.155.249
+ host 91.227.155.249
+object network MALICIOUS_91.227.155.238
+ host 91.227.155.238
+object network MALICIOUS_91.227.155.183
+ host 91.227.155.183
+object network MALICIOUS_91.227.155.46
+ host 91.227.155.46
+object network MALICIOUS_91.227.155.165
+ host 91.227.155.165
+object network MALICIOUS_91.227.155.87
+ host 91.227.155.87
+object network MALICIOUS_91.227.155.21
+ host 91.227.155.21
+object network MALICIOUS_91.227.155.136
+ host 91.227.155.136
+object network MALICIOUS_91.227.155.163
+ host 91.227.155.163
+object network MALICIOUS_91.227.155.180
+ host 91.227.155.180
+object network MALICIOUS_91.227.155.34
+ host 91.227.155.34
+object network MALICIOUS_91.227.155.16
+ host 91.227.155.16
+object network MALICIOUS_91.227.155.111
+ host 91.227.155.111
+object network MALICIOUS_91.227.155.15
+ host 91.227.155.15
+object network MALICIOUS_91.227.155.226
+ host 91.227.155.226
+object network MALICIOUS_91.227.155.77
+ host 91.227.155.77
+object network MALICIOUS_91.227.155.246
+ host 91.227.155.246
+object network MALICIOUS_91.227.155.78
+ host 91.227.155.78
+object network MALICIOUS_91.227.155.117
+ host 91.227.155.117
+object network MALICIOUS_91.227.155.191
+ host 91.227.155.191
+object network MALICIOUS_91.227.155.102
+ host 91.227.155.102
+object network MALICIOUS_91.227.155.79
+ host 91.227.155.79
+object network MALICIOUS_91.227.155.133
+ host 91.227.155.133
+object network MALICIOUS_91.227.155.218
+ host 91.227.155.218
+object network MALICIOUS_91.227.155.70
+ host 91.227.155.70
+object network MALICIOUS_91.227.155.86
+ host 91.227.155.86
+object network MALICIOUS_91.227.155.140
+ host 91.227.155.140
+object network MALICIOUS_91.227.155.248
+ host 91.227.155.248
+object network MALICIOUS_91.227.155.22
+ host 91.227.155.22
+object network MALICIOUS_91.227.155.75
+ host 91.227.155.75
+object network MALICIOUS_91.227.155.122
+ host 91.227.155.122
+object network MALICIOUS_91.227.155.13
+ host 91.227.155.13
+object network MALICIOUS_91.227.155.124
+ host 91.227.155.124
+object network MALICIOUS_91.227.155.211
+ host 91.227.155.211
+object network MALICIOUS_91.227.155.24
+ host 91.227.155.24
+object network MALICIOUS_91.227.155.14
+ host 91.227.155.14
+object network MALICIOUS_91.227.155.243
+ host 91.227.155.243
+object network MALICIOUS_91.227.155.96
+ host 91.227.155.96
+object network MALICIOUS_91.227.155.217
+ host 91.227.155.217
+object network MALICIOUS_91.227.155.66
+ host 91.227.155.66
+object network MALICIOUS_91.227.155.153
+ host 91.227.155.153
+object network MALICIOUS_91.227.155.186
+ host 91.227.155.186
+object network MALICIOUS_91.227.155.55
+ host 91.227.155.55
+object network MALICIOUS_91.227.155.59
+ host 91.227.155.59
+object network MALICIOUS_91.227.155.157
+ host 91.227.155.157
+object network MALICIOUS_91.227.155.94
+ host 91.227.155.94
+object network MALICIOUS_91.227.155.100
+ host 91.227.155.100
+object network MALICIOUS_91.227.155.213
+ host 91.227.155.213
+object network MALICIOUS_91.227.155.233
+ host 91.227.155.233
+object network MALICIOUS_91.227.155.146
+ host 91.227.155.146
+object network MALICIOUS_91.227.155.89
+ host 91.227.155.89
+object network MALICIOUS_91.227.155.49
+ host 91.227.155.49
+object network MALICIOUS_91.227.155.148
+ host 91.227.155.148
+object network MALICIOUS_91.227.155.101
+ host 91.227.155.101
+object network MALICIOUS_91.227.155.143
+ host 91.227.155.143
+object network MALICIOUS_91.227.155.3
+ host 91.227.155.3
+object network MALICIOUS_91.227.155.244
+ host 91.227.155.244
+object network MALICIOUS_91.227.155.85
+ host 91.227.155.85
+object network MALICIOUS_91.227.155.39
+ host 91.227.155.39
+object network MALICIOUS_91.227.155.189
+ host 91.227.155.189
+object network MALICIOUS_91.227.155.126
+ host 91.227.155.126
+object network MALICIOUS_91.227.155.239
+ host 91.227.155.239
+object network MALICIOUS_91.227.155.127
+ host 91.227.155.127
+object network MALICIOUS_91.227.155.72
+ host 91.227.155.72
+object network MALICIOUS_91.227.155.36
+ host 91.227.155.36
+object network MALICIOUS_91.227.155.61
+ host 91.227.155.61
+object network MALICIOUS_91.227.155.68
+ host 91.227.155.68
+object network MALICIOUS_91.227.155.169
+ host 91.227.155.169
+object network MALICIOUS_91.227.155.161
+ host 91.227.155.161
+object network MALICIOUS_91.227.155.2
+ host 91.227.155.2
+object network MALICIOUS_91.227.155.193
+ host 91.227.155.193
+object network MALICIOUS_91.227.155.62
+ host 91.227.155.62
+object network MALICIOUS_91.227.155.192
+ host 91.227.155.192
+object network MALICIOUS_91.227.155.8
+ host 91.227.155.8
+object network MALICIOUS_91.227.155.53
+ host 91.227.155.53
+object network MALICIOUS_91.227.155.30
+ host 91.227.155.30
+object network MALICIOUS_91.227.155.156
+ host 91.227.155.156
+object network MALICIOUS_91.227.155.224
+ host 91.227.155.224
+object network MALICIOUS_91.227.155.60
+ host 91.227.155.60
+object network MALICIOUS_91.227.155.194
+ host 91.227.155.194
+object network MALICIOUS_91.227.155.205
+ host 91.227.155.205
+object network MALICIOUS_91.227.155.144
+ host 91.227.155.144
+object network MALICIOUS_91.227.155.234
+ host 91.227.155.234
+object network MALICIOUS_91.227.155.23
+ host 91.227.155.23
+object network MALICIOUS_91.227.155.235
+ host 91.227.155.235
+object network MALICIOUS_91.227.155.240
+ host 91.227.155.240
+object network MALICIOUS_81.22.44.233
+ host 81.22.44.233
+object network MALICIOUS_81.22.44.187
+ host 81.22.44.187
+object network MALICIOUS_81.22.44.21
+ host 81.22.44.21
+object network MALICIOUS_81.22.44.121
+ host 81.22.44.121
+object network MALICIOUS_81.22.44.250
+ host 81.22.44.250
+object network MALICIOUS_81.22.44.205
+ host 81.22.44.205
+object network MALICIOUS_81.22.44.142
+ host 81.22.44.142
+object network MALICIOUS_91.227.155.83
+ host 91.227.155.83
+object network MALICIOUS_91.227.155.174
+ host 91.227.155.174
+object network MALICIOUS_91.227.155.168
+ host 91.227.155.168
+object network MALICIOUS_91.227.155.242
+ host 91.227.155.242
+object network MALICIOUS_91.227.155.112
+ host 91.227.155.112
+object network MALICIOUS_81.22.44.235
+ host 81.22.44.235
+object network MALICIOUS_81.22.44.65
+ host 81.22.44.65
+object network MALICIOUS_91.227.155.109
+ host 91.227.155.109
+object network MALICIOUS_91.227.155.135
+ host 91.227.155.135
+object network MALICIOUS_91.227.155.74
+ host 91.227.155.74
+object network MALICIOUS_91.227.155.41
+ host 91.227.155.41
+object network MALICIOUS_91.227.155.116
+ host 91.227.155.116
+object network MALICIOUS_91.227.155.132
+ host 91.227.155.132
+object network MALICIOUS_91.227.155.48
+ host 91.227.155.48
+object network MALICIOUS_91.227.155.160
+ host 91.227.155.160
+object network MALICIOUS_91.227.155.38
+ host 91.227.155.38
+object network MALICIOUS_91.227.155.88
+ host 91.227.155.88
+object network MALICIOUS_91.227.155.155
+ host 91.227.155.155
+object network MALICIOUS_91.227.155.152
+ host 91.227.155.152
+object network MALICIOUS_91.227.155.35
+ host 91.227.155.35
+object network MALICIOUS_91.227.155.172
+ host 91.227.155.172
+object network MALICIOUS_91.227.155.188
+ host 91.227.155.188
+object network MALICIOUS_212.107.27.0_24
+ subnet 212.107.27.0 255.255.255.0
+object network MALICIOUS_91.227.155.0_24
+ subnet 91.227.155.0 255.255.255.0
+object network MALICIOUS_81.22.44.0_24
+ subnet 81.22.44.0 255.255.255.0
+object network MALICIOUS_185.220.102.240
+ host 185.220.102.240
+object network MALICIOUS_185.220.101.0_24
+ subnet 185.220.101.0 255.255.255.0
+object network MALICIOUS_185.220.102.8
+ host 185.220.102.8
+object network MALICIOUS_23.129.64.130_24
+object network MALICIOUS_23.128.248.29
+ host 23.128.248.29
+object network MALICIOUS_46.166.139.1
+ host 46.166.139.1
+object network MALICIOUS_23.129.64.0_24
+ subnet 23.129.64.0 255.255.255.0
+object network MALICIOUS_185.220.102.6
+ host 185.220.102.6
+object network MALICIOUS_185.220.102.250
+ host 185.220.102.250
+object network MALICIOUS_185.220.103.9
+ host 185.220.103.9
+object network MALICIOUS_185.220.103.113
+ host 185.220.103.113
+object network MALICIOUS_185.233.100.23
+ host 185.233.100.23
+object network MALICIOUS_192.42.116.17
+ host 192.42.116.17
+object network MALICIOUS_195.176.3.19
+ host 195.176.3.19
+object network MALICIOUS_23.129.64.216
+ host 23.129.64.216
+object network MALICIOUS_23.129.64.215
+ host 23.129.64.215
+object network MALICIOUS_23.129.64.214
+ host 23.129.64.214
+object network MALICIOUS_23.129.64.212
+ host 23.129.64.212
+object network MALICIOUS_23.129.64.211
+ host 23.129.64.211
+object network MALICIOUS_23.129.64.210
+ host 23.129.64.210
+object network MALICIOUS_185.129.61.6
+ host 185.129.61.6
+object network MALICIOUS_185.129.61.62
+ host 185.129.61.62
+object network MALICIOUS_185.170.114.25
+ host 185.170.114.25
+object network MALICIOUS_185.220.100.241
+ host 185.220.100.241
+object network MALICIOUS_185.220.101.1
+ host 185.220.101.1
+object network MALICIOUS_185.220.101.8
+ host 185.220.101.8
+object network MALICIOUS_185.220.101.15
+ host 185.220.101.15
+object network MALICIOUS_185.220.101.32
+ host 185.220.101.32
+object network MALICIOUS_185.220.101.42
+ host 185.220.101.42
+object network MALICIOUS_185.220.101.33
+ host 185.220.101.33
+object network MALICIOUS_185.220.101.49
+ host 185.220.101.49
+object network MALICIOUS_185.220.101.57
+ host 185.220.101.57
+object network MALICIOUS_185.220.101.62
+ host 185.220.101.62
+object network MALICIOUS_185.220.101.59
+ host 185.220.101.59
+object network MALICIOUS_185.220.101.68
+ host 185.220.101.69
+object network MALICIOUS_198.96.155.3
+ host 198.96.155.3
+object network MALICIOUS_128.31.0.13
+ host 128.31.0.13
+object network MALICIOUS_151.80.148.159
+ host 151.80.148.159
+object network MALICIOUS_89.234.157.254
+ host 89.234.157.254
+object network MALICIOUS_80.67.172.162
+ host 80.67.172.162
+object network MALICIOUS_80.67.167.81
+ host 80.67.167.81
+object network MALICIOUS_23.128.248.30
+ host 23.128.248.30
+object network MALICIOUS_46.166.139.111
+ host 46.166.139.111
+object network MALICIOUS_23.129.64.217
+ host 23.129.64.217
+object network MALICIOUS_185.220.100.244
+ host 185.220.100.244
+object network MALICIOUS_185.195.71.244
+ host 185.195.71.244
+object network MALICIOUS_185.220.101.13
+ host 185.220.101.13
+object network MALICIOUS_23.128.248.11
+ host 23.128.248.11
+object network MALICIOUS_185.220.101.71
+ host 185.220.101.71
+object network MALICIOUS_103.251.167.20
+ host 103.251.167.20
+object network MALICIOUS_92.42.116.17
+ host 92.42.116.17
+object network MALICIOUS_185.220.101.74
+ host 185.220.101.74
+object network MALICIOUS_23.129.64.135
+ host 23.129.64.135
+object network MALICIOUS_85.220.101.72
+ host 85.220.101.72
+object network MALICIOUS_185.220.101.44
+ host 185.220.101.44
+object network MALICIOUS_185.220.100.249
+ host 185.220.100.249
+object network MALICIOUS_10.16.3.140
+ host 10.16.3.140
+object network MALICIOUS_185.220.101.6
+ host 185.220.101.6
+object network MALICIOUS_185.220.102.253
+ host 185.220.102.253
+object network MALICIOUS_94.230.208.148
+ host 94.230.208.148
+object network MALICIOUS_162.247.74.216
+ host 162.247.74.216
+object network MALICIOUS_185.67.82.114
+ host 185.67.82.114
+object network MALICIOUS_185.220.100.252
+ host 185.220.100.252
+object network MALICIOUS_185.220.100.251
+ host 185.220.100.251
+object network MALICIOUS_23.129.64.134
+ host 23.129.64.134
+object network MALICIOUS_185.220.100.245
+ host 185.220.100.245
+object network MALICIOUS_185.220.100.240
+ host 185.220.100.240
+object network MALICIOUS_185.220.101.66
+ host 185.220.101.66
+object network MALICIOUS_23.129.64.213
+ host 23.129.64.213
+object network MALICIOUS_192.42.116.200
+ host 192.42.116.200
+object network MALICIOUS_185.220.102.242
+ host 185.220.102.242
+object network CA_ERS_HSM_10.85.126.148
+ host 10.85.126.148
+object network MALICIOUS_51.210.223.146
+ host 51.210.223.146
+object network MALICIOUS_171.25.193.78
+ host 171.25.193.78
+object network MALICIOUS_104.244.76.170
+ host 104.244.76.170
+object network MALICIOUS_193.189.100.203
+ host 193.189.100.203
+object network MALICIOUS_171.25.193.20
+ host 171.25.193.20
+object network MALICIOUS_185.220.100.242
+ host 185.220.100.242
+object network MALICIOUS_185.220.101.182
+ host 185.220.101.182
+object network MALICIOUS_45.134.26.16
+ host 45.134.26.16
+object network MALICIOUS_94.102.57.152
+ host 94.102.57.152
+object network MALICIOUS_94.156.68.116
+ host 94.156.68.116
+object network MALICIOUS_45.135.232.12
+ host 45.135.232.12
+object network MALICIOUS_45.135.232.83
+ host 45.135.232.83
+object network MALICIOUS_193.143.1.62
+ host 193.143.1.62
+object network MALICIOUS_94.131.97.7
+ host 94.131.97.7
+object network MALICIOUS_94.131.8.92
+ host 94.131.8.92
+object network MALICIOUS_5.182.39.158
+ host 5.182.39.158
+object network MALICIOUS_95.164.18.92
+ host 95.164.18.92
+object network MALICIOUS_94.156.64.231
+ host 94.156.64.231
+object network MALICIOUS_94.156.64.35
+ host 94.156.64.35
+object network MALICIOUS_94.156.64.233
+ host 94.156.64.233
+object network MALICIOUS_94.156.64.211
+ host 94.156.64.211
+object network MALICIOUS_94.156.64.166
+ host 94.156.64.166
+object network MALICIOUS_94.156.64.241
+ host 94.156.64.241
+object network MALICIOUS_94.156.64.229
+ host 94.156.64.229
+object network MALICIOUS_94.156.64.226
+ host 94.156.64.226
+object network MALICIOUS_94.156.64.31
+ host 94.156.64.31
+object network MALICIOUS_94.156.67.57
+ host 94.156.67.57
+object network MALICIOUS_94.156.64.176
+ host 94.156.64.176
+object network MALICIOUS_94.156.64.230
+ host 94.156.64.230
+object network MALICIOUS_94.156.64.212
+ host 94.156.64.212
+object network MALICIOUS_94.156.64.36
+ host 94.156.64.36
+object network MALICIOUS_94.156.64.47
+ host 94.156.64.47
+object network MALICIOUS_94.156.64.227
+ host 94.156.64.227
+object network MALICIOUS_91.92.255.67
+ host 91.92.255.67
+object network MALICIOUS_90.204.129.11
+ host 90.204.129.11
+object network MALICIOUS_94.156.68.180
+ host 94.156.68.180
+object network MALICIOUS_91.92.255.166
+ host 91.92.255.166
+object network MALICIOUS_91.92.255.134
+ host 91.92.255.134
+object network MALICIOUS_91.92.253.179
+ host 91.92.253.179
+object network MALICIOUS_91.92.255.180
+ host 91.92.255.180
+object network MALICIOUS_91.92.255.131
+ host 91.92.255.131
+object network MALICIOUS_91.92.255.162
+ host 91.92.255.162
+object network MALICIOUS_94.156.64.27
+ host 94.156.64.27
+object network MALICIOUS_91.92.255.197
+ host 91.92.255.197
+object network MALICIOUS_94.156.64.41
+ host 94.156.64.41
+object network MALICIOUS_91.92.255.123
+ host 91.92.255.123
+object network MALICIOUS_91.92.255.56
+ host 91.92.255.56
+object network MALICIOUS_91.92.255.121
+ host 91.92.255.121
+object network MALICIOUS_94.156.68.80
+ host 94.156.68.80
+object network MALICIOUS_45.14.245.97
+ host 45.14.245.97
+object network MALICIOUS_77.91.74.79
+ host 77.91.74.79
+object network MALICIOUS_5.182.37.103
+ host 5.182.37.103
+object network MALICIOUS_176.120.65.95
+ host 176.120.65.95
+object-group network DM_INLINE_NETWORK_10
+ network-object object DID-PAM-PRIVX
+ network-object object MAL-PAM-PRIVX
+object-group service DM_INLINE_SERVICE_2
+ service-object object syslog 
+ service-object udp destination eq syslog 
+ service-object tcp destination eq 8413 
+object-group network DM_INLINE_NETWORK_1
+ network-object object DID-ASG
+ network-object object MAL-ASG
+object-group service DM_INLINE_TCP_1 tcp
+ port-object eq ldap
+ port-object eq ldaps
+object-group protocol TCPUDP
+ protocol-object udp
+ protocol-object tcp
+object-group network DM_INLINE_NETWORK_3
+ network-object object DID-PAM
+ network-object object MAL-PAM
+ network-object object MAL-PAM-DR
+object-group network TEST_VMS
+ network-object object 10.16.7.72
+ network-object object 10.16.7.74
+object-group network NRDT_RDP_Machines
+ network-object object 10.16.1.122
+ network-object object 10.16.142.11
+ network-object object 10.16.142.12
+ network-object object 10.16.142.18
+ network-object object 10.16.4.52
+ network-object object 10.16.98.57
+ network-object object 10.16.98.58
+ network-object object 10.16.98.60
+ network-object object 172.18.16.162
+ network-object object 172.18.16.181
+ network-object object 172.18.16.182
+object-group network DM_INLINE_NETWORK_5
+ network-object object DID-ASG
+ network-object object MAL-ASG
+ network-object object DIDC01LX117
+ network-object object DIDC01LX118
+ network-object object DIDV03LX160
+ network-object object MALC01LX92
+ network-object object MALC01LX93
+ network-object object PROD_VMS
+ group-object TEST_VMS
+ group-object NRDT_RDP_Machines
+ network-object object DIDV03LX276
+ network-object object DIDC01LX133
+object-group network DM_INLINE_NETWORK_6
+ network-object object DID-ASG
+ network-object object MAL-ASG
+object-group service DM_INLINE_SERVICE_1
+ service-object object RDP 
+ service-object tcp destination eq https 
+ service-object tcp destination eq ssh 
+ service-object tcp destination eq www 
+object-group service DM_INLINE_TCP_2 tcp
+ port-object eq www
+ port-object eq https
+object-group network External_IP_to_API_GW_test_instance
+ network-object object DIDV03LX160-NAT
+object-group network Internal_IP_API_GW_Server
+ network-object object DIDV03LX160
+object-group network NRDT_Production_External_IPs
+ description nrdt.co.uk
+ network-object object nrdt.co.uk
+ network-object object 34.241.49.74
+object-group network External_IP_to_API_GW_Prod_DIDC
+ network-object object DIDC01LX120-NAT
+ network-object object MALC01LX95-NAT
+object-group network External_IP_to_API_GW_Prod_MALC
+ network-object object 194.72.121.171
+ network-object object 194.72.121.172
+object-group network API_GW_Ext_LBs_DIDC_MALC
+ network-object object DIDC01LX120
+ network-object object MALC01LX95
+object-group network DM_INLINE_NETWORK_2
+ network-object object DIDC01LX120
+ network-object object MALC01LX95
+object-group network NRDT_Test_External_IPs
+ network-object object 34.251.66.80
+ network-object object NRDT_Test2_Ext_IP
+object-group network NRDT_API
+ network-object object test01.nrdt.co.uk
+object-group service DM_INLINE_TCP_3 tcp
+ port-object eq 9443
+ port-object eq https
+object-group network DM_INLINE_NETWORK_4
+ network-object object DIDC01LX117
+ network-object object DIDC01LX118
+ network-object object MALC01LX92
+ network-object object MALC01LX93
+ network-object object DIDC01LX133
+object-group service DM_INLINE_TCP_5 tcp
+ port-object eq 9443
+ port-object eq https
+object-group network SolarWinds
+ network-object object DIDC_SOLARWINDS_10.16.98.78
+ network-object object DIDC_SOLARWINDS_10.16.98.79
+ network-object object DIDC_SOLARWINDS_10.16.98.80
+ network-object object DIDC_SOLARWINDS_10.16.98.81
+ network-object object DIDC_SOLARWINDS_10.16.98.82
+ network-object object DIDC_SOLARWINDS_10.16.98.83
+ network-object object DIDC_SOLARWINDS_10.16.98.90
+ network-object object DIDC_SOLARWINDS_10.16.98.91
+ network-object object DIDC_SOLARWINDS_10.16.98.92
+ network-object object MALC_SOLARWINDS_10.16.142.112
+ network-object object MALC_SOLARWINDS_10.16.142.113
+ network-object object MALC_SOLARWINDS_10.16.142.114
+ network-object object MALC_SOLARWINDS_10.16.142.115
+ network-object object MALC_SOLARWINDS_10.16.142.116
+ network-object object MALC_SOLARWINDS_10.16.142.129
+ network-object object MALC_SOLARWINDS_10.16.142.130
+ network-object object MALC_SOLARWINDS_10.16.142.131
+object-group network DM_INLINE_NETWORK_7
+ network-object object MAL-PRIME-RANGE
+ network-object object DID-PRIME-RANGE
+ network-object object DIDC-SERV-15
+ group-object SolarWinds
+object-group network DM_INLINE_NETWORK_8
+ network-object object MAL-PRIME-RANGE
+ network-object object DID-PRIME-RANGE
+ group-object SolarWinds
+object-group service DM_INLINE_SERVICE_3
+ service-object object syslog 
+ service-object udp destination eq snmptrap 
+ service-object udp destination eq syslog 
+ service-object udp destination eq tftp 
+ service-object icmp 
+object-group network DM_INLINE_NETWORK_9
+ group-object NRDT_RDP_Machines
+ network-object object PROD_VMS
+ group-object TEST_VMS
+object-group service DM_INLINE_SERVICE_4
+ service-object object HTTPS-Alt 
+ service-object object RDP 
+ service-object object SSH-Alt 
+ service-object tcp destination eq www 
+ service-object tcp destination eq https 
+object-group network DM_INLINE_NETWORK_11
+ network-object object MANC-OSS-LAN
+ network-object object SOK-MAL-OSS-LAN
+object-group service htps_9443&443 tcp
+ port-object eq 9443
+ port-object eq https
+object-group network CapGemini_Servicenow_Production_External_IPs
+ network-object object ipaasprod-apis.eu1.ccp.capgemini.com
+ network-object object 3.121.141.63
+ network-object object 3.121.172.166
+ network-object object 3.121.204.16
+object-group network CapGemini_Servicenow_Test_External_IPs
+ network-object object ipaastest-apis.eu1.ccp.capgemini.com
+ network-object object 18.185.133.146
+ network-object object 52.59.79.110
+ network-object object 18.195.135.95
+object-group service DM_INLINE_SERVICE_13
+ service-object object HTTPS-Alt 
+ service-object tcp destination eq https 
+ service-object tcp destination eq www 
+object-group network DM_INLINE_NETWORK_12
+ network-object object DIDC01LX117
+ network-object object DIDC01LX118
+ network-object object MALC01LX92
+ network-object object MALC01LX93
+object-group network DM_INLINE_NETWORK_13
+ network-object object 3.121.204.16
+ network-object object ipaasprod-apis.eu1.ccp.capgemini.com
+ network-object object 3.121.141.63
+ network-object object 3.121.172.166
+object-group network DM_INLINE_NETWORK_14
+ network-object object DIDV03LX160
+ network-object object DIDV03LX276
+object-group network DM_INLINE_NETWORK_15
+ network-object object 18.185.133.146
+ network-object object 18.195.135.95
+ network-object object 52.59.79.110
+ network-object object ipaastest-apis.eu1.ccp.capgemini.com
+object-group service DNS_TCP_UDP_53 tcp-udp
+ port-object eq domain
+object-group service SPLUNK_FORWARDER tcp
+ port-object range 9981 9999
+object-group service TCP_8089 tcp
+ port-object eq 8089
+object-group service TCP_8443 tcp
+ port-object eq 8443
+object-group service TCP_UDP_52311 tcp-udp
+ port-object eq 52311
+object-group network DM_INLINE_NETWORK_16
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.18
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.19
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.20
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.18
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.19
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.20
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.84.153.18
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.84.153.19
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.84.153.20
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.18
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.19
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.20
+object-group network DM_INLINE_NETWORK_17
+ network-object object OSG-D_IPSEC_CAP_GEMINI_67.204.115.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_100.117.128.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_67.204.110.0
+object-group network DM_INLINE_NETWORK_18
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.86.153.10
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.86.153.11
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.87.153.10
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.87.153.11
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.84.153.10
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.84.153.11
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.85.153.10
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.85.153.11
+object-group network DM_INLINE_NETWORK_19
+ network-object object OSG-D_IPSEC_CAP_GEMINI_67.204.115.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_100.117.128.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_67.204.110.0
+object-group network DM_INLINE_NETWORK_20
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.86.153.10
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.86.153.11
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.87.153.10
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.87.153.11
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.84.153.10
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.84.153.11
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.85.153.10
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.85.153.11
+object-group network DM_INLINE_NETWORK_21
+ network-object object OSG-D_IPSEC_CAP_GEMINI_67.204.115.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_100.117.128.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_67.204.110.0
+object-group network DM_INLINE_NETWORK_22
+ network-object object ARKC_SP_CAP_GEMINI_SPLUNK_UF_10.86.153.2
+ network-object object ARKC_SP_CAP_GEMINI_SPLUNK_UF_10.86.153.3
+ network-object object ARKF_CP_CAP_GEMINI_SPLUNK_UF_10.84.153.2
+ network-object object ARKF_CP_CAP_GEMINI_SPLUNK_UF_10.84.153.3
+object-group network DM_INLINE_NETWORK_23
+ network-object object OSG-D_IPSEC_CAP_GEMINI_67.204.115.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_100.117.128.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_67.204.110.0
+object-group network DM_INLINE_NETWORK_24
+ network-object object ARKC_SP_CAP_GEMINI_SPLUNK_UF_10.86.153.2
+ network-object object ARKC_SP_CAP_GEMINI_SPLUNK_UF_10.86.153.3
+ network-object object ARKF_CP_CAP_GEMINI_SPLUNK_UF_10.84.153.2
+ network-object object ARKF_CP_CAP_GEMINI_SPLUNK_UF_10.84.153.3
+object-group network DM_INLINE_NETWORK_25
+ network-object object OSG-D_IPSEC_CAP_GEMINI_67.204.115.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_100.117.128.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_67.204.110.0
+object-group service DM_INLINE_TCP_23 tcp
+ group-object SPLUNK_FORWARDER
+ group-object TCP_8089
+object-group network DM_INLINE_NETWORK_26
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.18
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.19
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.20
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.18
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.19
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.20
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.84.153.18
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.84.153.19
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.84.153.20
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.18
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.19
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.20
+object-group network DM_INLINE_NETWORK_27
+ network-object object OSG-D_IPSEC_CAP_GEMINI_67.204.115.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_100.117.128.0
+ network-object object OSG-M_IPSEC_CAP_GEMINI_67.204.110.0
+object-group network ARKC_SP_CAP_GEMINI_PROD_RDS_SERVERS
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.18
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.19
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.86.153.20
+object-group network ARKC_SP_CAP_GEMINI_NONPROD_RDS_SERVERS
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.18
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.19
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.87.153.20
+object-group network ARKF_CP_CAP_GEMINI_PROD_RDS_SERVERS
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.84.153.18
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.84.153.19
+ network-object object ARKC_SP_CAP_GEMINI_RDS_10.84.153.20
+object-group network ARKF_CP_CAP_GEMINI_NONPROD_RDS_SERVERS
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.18
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.19
+ network-object object ARKF_CP_CAP_GEMINI_RDS_10.85.153.20
+object-group service CAP_RDP_JUMPBOXES
+ service-object icmp 
+ service-object tcp destination eq 3389 
+ service-object tcp destination eq 8443 
+ service-object tcp destination eq domain 
+ service-object udp destination eq domain 
+object-group network ARK_CAP_GEMINI_RDS_SERVERS
+ group-object ARKC_SP_CAP_GEMINI_PROD_RDS_SERVERS
+ group-object ARKC_SP_CAP_GEMINI_NONPROD_RDS_SERVERS
+ group-object ARKF_CP_CAP_GEMINI_PROD_RDS_SERVERS
+ group-object ARKF_CP_CAP_GEMINI_NONPROD_RDS_SERVERS
+object-group network OSG-D_IPSEC_CAP_GEMINI
+ network-object object OSG-D_IPSEC_CAP_GEMINI_100.117.128.0
+ network-object object OSG-D_IPSEC_CAP_GEMINI_67.204.115.0
+object-group service CAP_OPSVIEW
+ service-object tcp destination eq ssh 
+ service-object tcp destination eq domain 
+ service-object udp destination eq domain 
+object-group network ARKC_SP_CAP_GEMINI_PROD_TEM_RELAYS
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.86.153.10
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.86.153.11
+object-group network ARKC_SP_CAP_GEMINI_NONPROD_TEM_RELAYS
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.87.153.10
+ network-object object ARKC_SP_CAP_GEMINI_TEM_RELAY_10.87.153.11
+object-group network ARKF_CP_CAP_GEMINI_PROD_TEM_RELAYS
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.84.153.10
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.84.153.11
+object-group network ARKF_CP_CAP_GEMINI_NONPROD_TEM_RELAYS
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.85.153.10
+ network-object object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAY_10.85.153.11
+object-group network ARK_CAP_GEMINI_BIGFIX_TEM_RELAYS
+ group-object ARKC_SP_CAP_GEMINI_PROD_TEM_RELAYS
+ group-object ARKC_SP_CAP_GEMINI_NONPROD_TEM_RELAYS
+ group-object ARKF_CP_CAP_GEMINI_PROD_TEM_RELAYS
+ group-object ARKF_CP_CAP_GEMINI_NONPROD_TEM_RELAYS
+object-group service CAP_BIGFIX_TEM
+ service-object icmp 
+ service-object tcp destination eq 52311 
+ service-object udp destination eq 52311 
+object-group network ARKC_SP_CAP_GEMINI_PROD_OPSVIEW
+ network-object object ARKC_SP_CAP_GEMINI_OPSVIEW_10.86.153.26
+ network-object object ARKC_SP_CAP_GEMINI_OPSVIEW_10.86.153.27
+ network-object object ARKC_SP_CAP_GEMINI_OPSVIEW_10.86.153.28
+ network-object object ARKC_SP_CAP_GEMINI_OPSVIEW_10.86.153.29
+object-group network ARKF_CP_CAP_GEMINI_PROD_OPSVIEW
+ network-object object ARKF_CP_CAP_GEMINI_OPSVIEW_10.84.153.26
+ network-object object ARKF_CP_CAP_GEMINI_OPSVIEW_10.84.153.27
+ network-object object ARKF_CP_CAP_GEMINI_OPSVIEW_10.84.153.28
+object-group network ARK_CAP_GEMINI_OPSVIEW
+ group-object ARKC_SP_CAP_GEMINI_PROD_OPSVIEW
+ group-object ARKF_CP_CAP_GEMINI_PROD_OPSVIEW
+object-group network DM_INLINE_NETWORK_28
+ network-object object DIDC01LX117
+ network-object object DIDC01LX118
+ network-object object MALC01LX92
+ network-object object MALC01LX93
+ network-object object DIDV03LX160
+ network-object object DIDV03LX276
+ network-object object DIDC01LX133
+object-group network DM_INLINE_NETWORK_29
+ network-object object DIDV03LX160
+ network-object object DIDV03LX276
+object-group network Atlassian_Cloud_External_IPs
+ description Atlassian Cloud Outgoing Connection Public IPs
+ network-object object Atlassian_Cloud_104.192.137.240
+ network-object object Atlassian_Cloud_104.192.138.240
+ network-object object Atlassian_Cloud_104.192.140.240
+ network-object object Atlassian_Cloud_104.192.142.240
+ network-object object Atlassian_Cloud_104.192.143.240
+ network-object object Atlassian_Cloud_13.236.8.224
+ network-object object Atlassian_Cloud_13.52.5.96
+ network-object object Atlassian_Cloud_18.136.214.96
+ network-object object Atlassian_Cloud_18.184.99.224
+ network-object object Atlassian_Cloud_18.234.32.224
+ network-object object Atlassian_Cloud_18.246.31.224
+ network-object object Atlassian_Cloud_185.166.142.240
+ network-object object Atlassian_Cloud_185.166.143.240
+ network-object object Atlassian_Cloud_52.215.192.224
+ network-object object Atlassian_Cloud_3.26.128.128
+ network-object object Atlassian_Cloud_3.69.198.0
+ network-object object Atlassian_Cloud_3.99.65.0
+ network-object object Atlassian_Cloud_3.101.177.128
+ network-object object Atlassian_Cloud_3.109.72.192
+ network-object object Atlassian_Cloud_3.251.213.64
+ network-object object Atlassian_Cloud_13.52.5.0
+ network-object object Atlassian_Cloud_13.214.1.0
+ network-object object Atlassian_Cloud_13.236.8.128
+ network-object object Atlassian_Cloud_15.228.142.0
+ network-object object Atlassian_Cloud_18.136.214.0
+ network-object object Atlassian_Cloud_18.170.192.128
+ network-object object Atlassian_Cloud_18.184.99.128
+ network-object object Atlassian_Cloud_18.205.93.0
+ network-object object Atlassian_Cloud_18.234.32.128
+ network-object object Atlassian_Cloud_18.246.31.128
+ network-object object Atlassian_Cloud_34.199.54.113
+ network-object object Atlassian_Cloud_34.216.18.129
+ network-object object Atlassian_Cloud_34.218.156.209
+ network-object object Atlassian_Cloud_34.218.168.212
+ network-object object Atlassian_Cloud_34.232.25.90
+ network-object object Atlassian_Cloud_34.232.119.183
+ network-object object Atlassian_Cloud_34.236.25.177
+ network-object object Atlassian_Cloud_35.75.131.128
+ network-object object Atlassian_Cloud_35.84.197.12
+ network-object object Atlassian_Cloud_35.155.178.254
+ network-object object Atlassian_Cloud_35.160.177.10
+ network-object object Atlassian_Cloud_35.171.175.212
+ network-object object Atlassian_Cloud_44.197.146.192
+ network-object object Atlassian_Cloud_52.41.219.63
+ network-object object Atlassian_Cloud_52.54.90.98
+ network-object object Atlassian_Cloud_52.202.195
+ network-object object Atlassian_Cloud_52.203.14.55
+ network-object object Atlassian_Cloud_52.204.96.37
+ network-object object Atlassian_Cloud_52.215.192.128
+ network-object object Atlassian_Cloud_104.192.136.0
+ network-object object Atlassian_Cloud_104.192.136.240
+ network-object object Atlassian_Cloud_185.166.140.0
+ network-object object Atlassian_Cloud_3.216.235.48
+ network-object object Atlassian_Cloud_34.231.96.243
+ network-object object Atlassian_Cloud_44.199.3.254
+ network-object object Atlassian_Cloud_174.129.205.191
+ network-object object Atlassian_Cloud_44.199.127.226
+ network-object object Atlassian_Cloud_44.199.45.64
+ network-object object Atlassian_Cloud_3.221.151.112
+ network-object object Atlassian_Cloud_52.205.184.192
+ network-object object Atlassian_Cloud_52.72.137.240
+object-group network DM_INLINE_NETWORK_30
+ network-object object DIDC01LX120
+ network-object object MALC01LX95
+object-group network DM_INLINE_NETWORK_31
+ network-object object DIDV03LX160
+ network-object object DIDV03LX276
+object-group network DM_INLINE_NETWORK_32
+ network-object object DIDC01LX120
+ network-object object MALC01LX95
+object-group network DM_INLINE_NETWORK_33
+ network-object object DIDC01LX120
+ network-object object MALC01LX95
+object-group network DM_INLINE_NETWORK_35
+ group-object Atlassian_Cloud_External_IPs
+ network-object object nrttelecoms.atlassian.net
+object-group network DM_INLINE_NETWORK_36
+ group-object Atlassian_Cloud_External_IPs
+ network-object object nrttelecoms-sanbox-430.atlassian.net
+object-group network DM_INLINE_NETWORK_34
+ network-object object DIDC01LX117
+ network-object object DIDC01LX118
+ network-object object DIDV03LX160
+ network-object object DIDV03LX276
+ network-object object MALC01LX92
+ network-object object MALC01LX93
+ network-object object DIDC01LX133
+object-group network DM_INLINE_NETWORK_37
+ network-object object DIDC01LX120
+ network-object object MALC01LX95
+object-group network DM_INLINE_NETWORK_38
+ network-object object DIDV03LX160
+ network-object object DIDV03LX276
+ network-object object DIDC01LX133
+object-group network Locken_SaaS_External_IPs
+ description Locken SaaS Platform API Endpoints
+ network-object object 51.91.73.159
+ network-object object networkrailtelecom.lockensmartaccess.com
+ network-object object nrt-preprod.lockensmartaccess.com
+ network-object object is.lockensmartaccess.com
+ network-object object pre-is.lockensmartaccess.com
+object-group service DM_INLINE_TCP_35 tcp
+ port-object eq 58592
+ port-object eq https
+ group-object TCP_8443
+object-group service DM_INLINE_TCP_4 tcp
+ port-object eq 9443
+ port-object eq https
+object-group network MALICIOUS-ADDRESSES
+ description Network object for all IP addresses deemed malicious by NRT SOC and should be blocked.
+ network-object object MARCH-23_91.240.118.9
+ network-object object MALICIOUS_5.188.206.92
+ network-object object MALICIOUS_5.188.206.88
+ network-object object MALICIOUS_5.188.206.93
+ network-object object MALICIOUS_45.143.203.21
+ network-object object MALICIOUS_45.67.213.122
+ network-object object MALICIOUS_45.227.252.236
+ network-object object MALICIOUS_62.233.50.101
+ network-object object MALICIOUS_62.233.51.37
+ network-object object MALICIOUS_5.8.18.117
+ network-object object MALICIOUS_45.227.255.156
+ network-object object MALICIOUS_45.227.252.241
+ network-object object MALICIOUS_45.227.252.237
+ network-object object MALICIOUS_46.161.27.155
+ network-object object MALICIOUS_46.161.27.123
+ network-object object MALICIOUS_62.233.50.25
+ network-object object MALICIOUS_78.128.112.211
+ network-object object MALICIOUS_78.128.112.195
+ network-object object MALICIOUS_78.128.112.141
+ network-object object MALICIOUS_78.128.112.138
+ network-object object MALICIOUS_88.214.26.37
+ network-object object MALICIOUS_88.214.26.27
+ network-object object MALICIOUS_91.242.228.136
+ network-object object MALICIOUS_92.118.36.201
+ network-object object MALICIOUS_147.78.47.245
+ network-object object MALICIOUS_179.60.150.150
+ network-object object MALICIOUS_179.60.146.51
+ network-object object MALICIOUS_193.29.13.152
+ network-object object MALICIOUS_194.110.203.69
+ network-object object MALICIOUS_5.8.18.236
+ network-object object MALICIOUS_5.8.18.116
+ network-object object MALICIOUS_183.136.225.32
+ network-object object MALICIOUS_185.157.162.19
+ network-object object MALICIOUS_79.124.59.86
+ network-object object MALICIOUS_31.184.236.78
+ network-object object MALICIOUS_31.184.236.31
+ network-object object MALICIOUS_176.111.174.123
+ network-object object MALICIOUS_194.26.135.67
+ network-object object MALICIOUS_156.146.40.206
+ network-object object MALICIOUS_79.124.59.158
+ network-object object MALICIOUS_104.156.155.7
+ network-object object MALICIOUS_45.134.144.238
+ network-object object MALICIOUS_109.123.249.83
+ network-object object MALICIOUS_152.89.198.15
+ network-object object MALICIOUS_85.192.63.25
+ network-object object MALICIOUS_194.26.135.153
+ network-object object MALICIOUS_194.26.135.140
+ network-object object MALICIOUS_194.26.135.152
+ network-object object MALICIOUS_194.26.135.150
+ network-object object MALICIOUS_194.26.135.149
+ network-object object MALICIOUS_194.26.135.148
+ network-object object MALICIOUS_79.133.56.60
+ network-object object MALICIOUS_79.110.48.40
+ network-object object MALICIOUS_190.211.252.224
+ network-object object MALICIOUS_194.26.135.185
+ network-object object MALICIOUS_194.26.135.167
+ network-object object MALICIOUS_194.26.135.177
+ network-object object MALICIOUS_89.248.165.30
+ network-object object MALICIOUS_142.234.157.39
+ network-object object MALICIOUS_62.122.184.231
+ network-object object MALICIOUS_77.75.230.41
+ network-object object MALICIOUS_94.131.114.79
+ network-object object MALICIOUS_138.124.184.128
+ network-object object MALICIOUS_77.91.100.47
+ network-object object MALICIOUS_94.131.13.27
+ network-object object MALICIOUS_45.89.55.111
+ network-object object MALICIOUS_5.182.38.191
+ network-object object MALICIOUS_185.74.222.37
+ network-object object MALICIOUS_95.164.11.73
+ network-object object MALICIOUS_194.26.135.111
+ network-object object MALICIOUS_45.67.34.203
+ network-object object MALICIOUS_94.142.138.73
+ network-object object MALICIOUS_179.43.133.218
+ network-object object MALICIOUS_94.131.8.158
+ network-object object MALICIOUS_78.46.85.49
+ network-object object MALICIOUS_81.17.26.130
+ network-object object MALICIOUS_94.130.54.173
+ network-object object MALICIOUS_179.43.191.154
+ network-object object MALICIOUS_146.19.106.36
+ network-object object MALICIOUS_95.164.44.57
+ network-object object MALICIOUS_31.7.62.138
+ network-object object MALICIOUS_179.43.174.10
+ network-object object MALICIOUS_146.19.170.59
+ network-object object MALICIOUS_31.184.236.88
+ network-object object MALICIOUS_45.8.147.10
+ network-object object MALICIOUS_194.165.59.145
+ network-object object MALICIOUS_5.252.23.46
+ network-object object MALICIOUS_190.211.252.42
+ network-object object MALICIOUS_159.69.73.215
+ network-object object MALICIOUS_45.159.251.163
+ network-object object MALICIOUS_45.84.155.60
+ network-object object MALICIOUS_5.182.36.153
+ network-object object MALICIOUS_77.91.103.158
+ network-object object MALICIOUS_95.164.45.188
+ network-object object MALICIOUS_5.181.21.155
+ network-object object MALICIOUS_5.182.38.62
+ network-object object MALICIOUS_45.153.230.66
+ network-object object MALICIOUS_213.138.116.80
+ network-object object MALICIOUS_194.26.192.93
+ network-object object MALICIOUS_193.109.85.29
+ network-object object MALICIOUS_83.97.73.87
+ network-object object MALICIOUS_179.43.190.98
+ network-object object MALICIOUS_185.216.140.209
+ network-object object MALICIOUS_89.213.6.106
+ network-object object MALICIOUS_89.213.6.54
+ network-object object MALICIOUS_5.252.71.144
+ network-object object MALICIOUS_89.213.6.223
+ network-object object MALICIOUS_185.138.235.175
+ network-object object MALICIOUS_89.213.6.217
+ network-object object MALICIOUS_89.213.6.206
+ network-object object MALICIOUS_89.213.6.194
+ network-object object MALICIOUS_89.213.6.161
+ network-object object MALICIOUS_89.213.6.4
+ network-object object MALICIOUS_5.253.39.3
+ network-object object MALICIOUS_89.213.6.215
+ network-object object MALICIOUS_91.239.62.48
+ network-object object MALICIOUS_89.213.6.205
+ network-object object MALICIOUS_89.213.6.74
+ network-object object MALICIOUS_185.138.235.77
+ network-object object MALICIOUS_5.252.71.129
+ network-object object MALICIOUS_89.213.6.246
+ network-object object MALICIOUS_195.242.240.140
+ network-object object MALICIOUS_89.213.6.224
+ network-object object MALICIOUS_5.252.71.199
+ network-object object MALICIOUS_185.138.235.121
+ network-object object MALICIOUS_89.213.6.43
+ network-object object MALICIOUS_5.252.71.84
+ network-object object MALICIOUS_195.242.240.174
+ network-object object MALICIOUS_147.78.47.47
+ network-object object MALICIOUS_46.21.250.200
+ network-object object MALICIOUS_78.128.112.78
+ network-object object MALICIOUS_31.184.236.15
+ network-object object MALICIOUS_122.161.53.136
+ network-object object MALICIOUS_31.184.236.64
+ network-object object MALICIOUS_31.184.236.118
+ network-object object MALICIOUS_89.213.6.236
+ network-object object MALICIOUS_89.213.6.97
+ network-object object MALICIOUS_185.138.235.3
+ network-object object MALICIOUS_89.213.6.241
+ network-object object MALICIOUS_193.29.13.166
+ network-object object MALICIOUS_213.86.175.34
+ network-object object MALICIOUS_37.152.228.141
+ network-object object MALICIOUS_147.161.145.106
+ network-object object MALICIOUS_31.94.62.248
+ network-object object MALICIOUS_5.182.38.88
+ network-object object MALICIOUS_5.181.21.141
+ network-object object MALICIOUS_95.164.11.49
+ network-object object MALICIOUS_45.67.35.89
+ network-object object MALICIOUS_94.131.97.159
+ network-object object MALICIOUS_185.231.207.31
+ network-object object MALICIOUS_95.164.19.53
+ network-object object MALICIOUS_95.164.37.31
+ network-object object MALICIOUS_89.213.6.209
+ network-object object MALICIOUS_89.213.6.51
+ network-object object MALICIOUS_185.138.235.44
+ network-object object MALICIOUS_89.213.6.107
+ network-object object MALICIOUS_91.239.62.38
+ network-object object MALICIOUS_89.213.6.248
+ network-object object MALICIOUS_89.213.6.171
+ network-object object MALICIOUS_185.138.235.6
+ network-object object MALICIOUS_45.152.178.144
+ network-object object MALICIOUS_45.150.65.173
+ network-object object MALICIOUS_94.131.8.51
+ network-object object MALICIOUS_94.131.102.14
+ network-object object MALICIOUS_191.101.234.76
+ network-object object MALICIOUS_149.57.16.177
+ network-object object MALICIOUS_185.232.67.7
+ network-object object MALICIOUS_203.99.207.50
+ network-object object MALICIOUS_166.1.14.235
+ network-object object MALICIOUS_64.113.1.149
+ network-object object MALICIOUS_176.120.74.28
+ network-object object MALICIOUS_185.196.8.45
+ network-object object MALICIOUS_81.22.44.56
+ network-object object MALICIOUS_91.227.155.9
+ network-object object MALICIOUS_212.107.27.185
+ network-object object MALICIOUS_212.107.27.186
+ network-object object MALICIOUS_212.107.27.184
+ network-object object MALICIOUS_212.107.27.187
+ network-object object MALICIOUS_212.107.27.189
+ network-object object MALICIOUS_212.107.27.188
+ network-object object MALICIOUS_212.107.27.191
+ network-object object MALICIOUS_212.107.27.195
+ network-object object MALICIOUS_212.107.27.193
+ network-object object MALICIOUS_212.107.27.196
+ network-object object MALICIOUS_212.107.27.190
+ network-object object MALICIOUS_212.107.27.192
+ network-object object MALICIOUS_212.107.27.197
+ network-object object MALICIOUS_212.107.27.194
+ network-object object MALICIOUS_212.107.27.198
+ network-object object MALICIOUS_212.107.27.199
+ network-object object MALICIOUS_212.107.27.204
+ network-object object MALICIOUS_212.107.27.209
+ network-object object MALICIOUS_212.107.27.211
+ network-object object MALICIOUS_212.107.27.205
+ network-object object MALICIOUS_212.107.27.212
+ network-object object MALICIOUS_212.107.27.216
+ network-object object MALICIOUS_212.107.27.215
+ network-object object MALICIOUS_212.107.27.213
+ network-object object MALICIOUS_212.107.27.214
+ network-object object MALICIOUS_212.107.27.217
+ network-object object MALICIOUS_212.107.27.218
+ network-object object MALICIOUS_212.107.27.207
+ network-object object MALICIOUS_212.107.27.208
+ network-object object MALICIOUS_212.107.27.206
+ network-object object MALICIOUS_212.107.27.210
+ network-object object MALICIOUS_212.107.27.202
+ network-object object MALICIOUS_212.107.27.203
+ network-object object MALICIOUS_212.107.27.201
+ network-object object MALICIOUS_91.227.155.123
+ network-object object MALICIOUS_91.227.155.76
+ network-object object MALICIOUS_91.227.155.232
+ network-object object MALICIOUS_91.227.155.215
+ network-object object MALICIOUS_91.227.155.221
+ network-object object MALICIOUS_91.227.155.173
+ network-object object MALICIOUS_91.227.155.230
+ network-object object MALICIOUS_91.227.155.43
+ network-object object MALICIOUS_91.227.155.199
+ network-object object MALICIOUS_91.227.155.166
+ network-object object MALICIOUS_91.227.155.150
+ network-object object MALICIOUS_91.227.155.45
+ network-object object MALICIOUS_91.227.155.73
+ network-object object MALICIOUS_91.227.155.7
+ network-object object MALICIOUS_91.227.155.179
+ network-object object MALICIOUS_91.227.155.32
+ network-object object MALICIOUS_91.227.155.158
+ network-object object MALICIOUS_91.227.155.185
+ network-object object MALICIOUS_91.227.155.249
+ network-object object MALICIOUS_91.227.155.238
+ network-object object MALICIOUS_91.227.155.183
+ network-object object MALICIOUS_91.227.155.46
+ network-object object MALICIOUS_91.227.155.165
+ network-object object MALICIOUS_91.227.155.87
+ network-object object MALICIOUS_91.227.155.21
+ network-object object MALICIOUS_91.227.155.136
+ network-object object MALICIOUS_91.227.155.163
+ network-object object MALICIOUS_91.227.155.180
+ network-object object MALICIOUS_91.227.155.34
+ network-object object MALICIOUS_91.227.155.16
+ network-object object MALICIOUS_91.227.155.111
+ network-object object MALICIOUS_91.227.155.15
+ network-object object MALICIOUS_91.227.155.226
+ network-object object MALICIOUS_91.227.155.77
+ network-object object MALICIOUS_91.227.155.246
+ network-object object MALICIOUS_91.227.155.78
+ network-object object MALICIOUS_91.227.155.117
+ network-object object MALICIOUS_91.227.155.191
+ network-object object MALICIOUS_91.227.155.102
+ network-object object MALICIOUS_91.227.155.79
+ network-object object MALICIOUS_91.227.155.133
+ network-object object MALICIOUS_91.227.155.218
+ network-object object MALICIOUS_91.227.155.70
+ network-object object MALICIOUS_91.227.155.86
+ network-object object MALICIOUS_91.227.155.140
+ network-object object MALICIOUS_91.227.155.248
+ network-object object MALICIOUS_91.227.155.22
+ network-object object MALICIOUS_91.227.155.75
+ network-object object MALICIOUS_91.227.155.122
+ network-object object MALICIOUS_91.227.155.13
+ network-object object MALICIOUS_91.227.155.124
+ network-object object MALICIOUS_91.227.155.211
+ network-object object MALICIOUS_91.227.155.24
+ network-object object MALICIOUS_91.227.155.14
+ network-object object MALICIOUS_91.227.155.243
+ network-object object MALICIOUS_91.227.155.96
+ network-object object MALICIOUS_91.227.155.217
+ network-object object MALICIOUS_91.227.155.66
+ network-object object MALICIOUS_91.227.155.153
+ network-object object MALICIOUS_91.227.155.186
+ network-object object MALICIOUS_91.227.155.55
+ network-object object MALICIOUS_91.227.155.59
+ network-object object MALICIOUS_91.227.155.157
+ network-object object MALICIOUS_91.227.155.94
+ network-object object MALICIOUS_91.227.155.100
+ network-object object MALICIOUS_91.227.155.213
+ network-object object MALICIOUS_91.227.155.233
+ network-object object MALICIOUS_91.227.155.146
+ network-object object MALICIOUS_91.227.155.89
+ network-object object MALICIOUS_91.227.155.49
+ network-object object MALICIOUS_91.227.155.148
+ network-object object MALICIOUS_91.227.155.101
+ network-object object MALICIOUS_91.227.155.143
+ network-object object MALICIOUS_91.227.155.3
+ network-object object MALICIOUS_91.227.155.244
+ network-object object MALICIOUS_91.227.155.85
+ network-object object MALICIOUS_91.227.155.39
+ network-object object MALICIOUS_91.227.155.189
+ network-object object MALICIOUS_91.227.155.126
+ network-object object MALICIOUS_91.227.155.239
+ network-object object MALICIOUS_91.227.155.127
+ network-object object MALICIOUS_91.227.155.72
+ network-object object MALICIOUS_91.227.155.36
+ network-object object MALICIOUS_91.227.155.61
+ network-object object MALICIOUS_91.227.155.68
+ network-object object MALICIOUS_91.227.155.169
+ network-object object MALICIOUS_91.227.155.161
+ network-object object MALICIOUS_91.227.155.2
+ network-object object MALICIOUS_91.227.155.193
+ network-object object MALICIOUS_91.227.155.62
+ network-object object MALICIOUS_91.227.155.192
+ network-object object MALICIOUS_91.227.155.8
+ network-object object MALICIOUS_91.227.155.53
+ network-object object MALICIOUS_91.227.155.30
+ network-object object MALICIOUS_91.227.155.156
+ network-object object MALICIOUS_91.227.155.224
+ network-object object MALICIOUS_91.227.155.60
+ network-object object MALICIOUS_91.227.155.194
+ network-object object MALICIOUS_91.227.155.205
+ network-object object MALICIOUS_91.227.155.144
+ network-object object MALICIOUS_91.227.155.234
+ network-object object MALICIOUS_91.227.155.23
+ network-object object MALICIOUS_91.227.155.235
+ network-object object MALICIOUS_91.227.155.240
+ network-object object MALICIOUS_81.22.44.233
+ network-object object MALICIOUS_81.22.44.187
+ network-object object MALICIOUS_81.22.44.21
+ network-object object MALICIOUS_81.22.44.121
+ network-object object MALICIOUS_81.22.44.250
+ network-object object MALICIOUS_81.22.44.205
+ network-object object MALICIOUS_81.22.44.142
+ network-object object MALICIOUS_91.227.155.83
+ network-object object MALICIOUS_91.227.155.174
+ network-object object MALICIOUS_91.227.155.168
+ network-object object MALICIOUS_91.227.155.242
+ network-object object MALICIOUS_91.227.155.112
+ network-object object MALICIOUS_81.22.44.235
+ network-object object MALICIOUS_81.22.44.65
+ network-object object MALICIOUS_91.227.155.109
+ network-object object MALICIOUS_91.227.155.135
+ network-object object MALICIOUS_91.227.155.74
+ network-object object MALICIOUS_91.227.155.41
+ network-object object MALICIOUS_91.227.155.116
+ network-object object MALICIOUS_91.227.155.132
+ network-object object MALICIOUS_91.227.155.48
+ network-object object MALICIOUS_91.227.155.160
+ network-object object MALICIOUS_91.227.155.38
+ network-object object MALICIOUS_91.227.155.88
+ network-object object MALICIOUS_91.227.155.155
+ network-object object MALICIOUS_91.227.155.152
+ network-object object MALICIOUS_91.227.155.35
+ network-object object MALICIOUS_91.227.155.172
+ network-object object MALICIOUS_91.227.155.188
+ network-object object MALICIOUS_212.107.27.0_24
+ network-object object MALICIOUS_91.227.155.0_24
+ network-object object MALICIOUS_81.22.44.0_24
+ network-object object MALICIOUS_185.220.101.0_24
+ network-object object MALICIOUS_185.220.102.240
+ network-object object MALICIOUS_185.220.102.8
+ network-object object MALICIOUS_23.128.248.29
+ network-object object MALICIOUS_46.166.139.1
+ network-object object MALICIOUS_23.129.64.0_24
+ network-object object MALICIOUS_185.220.102.6
+ network-object object MALICIOUS_185.220.102.250
+ network-object object MALICIOUS_185.220.103.9
+ network-object object MALICIOUS_185.220.103.113
+ network-object object MALICIOUS_185.233.100.23
+ network-object object MALICIOUS_192.42.116.17
+ network-object object MALICIOUS_195.176.3.19
+ network-object object MALICIOUS_23.129.64.216
+ network-object object MALICIOUS_23.129.64.215
+ network-object object MALICIOUS_23.129.64.214
+ network-object object MALICIOUS_23.129.64.212
+ network-object object MALICIOUS_23.129.64.211
+ network-object object MALICIOUS_23.129.64.210
+ network-object object MALICIOUS_185.129.61.6
+ network-object object MALICIOUS_185.129.61.62
+ network-object object MALICIOUS_185.170.114.25
+ network-object object MALICIOUS_185.220.100.241
+ network-object object MALICIOUS_185.220.101.1
+ network-object object MALICIOUS_185.220.101.8
+ network-object object MALICIOUS_185.220.101.15
+ network-object object MALICIOUS_185.220.101.32
+ network-object object MALICIOUS_185.220.101.42
+ network-object object MALICIOUS_185.220.101.33
+ network-object object MALICIOUS_185.220.101.49
+ network-object object MALICIOUS_185.220.101.57
+ network-object object MALICIOUS_185.220.101.62
+ network-object object MALICIOUS_185.220.101.59
+ network-object object MALICIOUS_185.220.101.68
+ network-object object MALICIOUS_198.96.155.3
+ network-object object MALICIOUS_128.31.0.13
+ network-object object MALICIOUS_151.80.148.159
+ network-object object MALICIOUS_89.234.157.254
+ network-object object MALICIOUS_80.67.172.162
+ network-object object MALICIOUS_80.67.167.81
+ network-object object MALICIOUS_23.128.248.30
+ network-object object MALICIOUS_46.166.139.111
+ network-object object MALICIOUS_23.129.64.217
+ network-object object MALICIOUS_185.220.100.244
+ network-object object MALICIOUS_185.195.71.244
+ network-object object MALICIOUS_185.220.101.13
+ network-object object MALICIOUS_23.128.248.11
+ network-object object MALICIOUS_185.220.101.71
+ network-object object MALICIOUS_103.251.167.20
+ network-object object MALICIOUS_185.220.101.74
+ network-object object MALICIOUS_23.129.64.135
+ network-object object MALICIOUS_185.220.101.44
+ network-object object MALICIOUS_185.220.100.249
+ network-object object MALICIOUS_185.220.101.6
+ network-object object MALICIOUS_185.220.102.253
+ network-object object MALICIOUS_94.230.208.148
+ network-object object MALICIOUS_162.247.74.216
+ network-object object MALICIOUS_185.67.82.114
+ network-object object MALICIOUS_185.220.100.252
+ network-object object MALICIOUS_185.220.100.251
+ network-object object MALICIOUS_23.129.64.134
+ network-object object MALICIOUS_185.220.100.245
+ network-object object MALICIOUS_185.220.100.240
+ network-object object MALICIOUS_185.220.101.66
+ network-object object MALICIOUS_23.129.64.213
+ network-object object MALICIOUS_192.42.116.200
+ network-object object MALICIOUS_185.220.102.242
+ network-object object MALICIOUS_51.210.223.146
+ network-object object MALICIOUS_171.25.193.78
+ network-object object MALICIOUS_104.244.76.170
+ network-object object MALICIOUS_193.189.100.203
+ network-object object MALICIOUS_171.25.193.20
+ network-object object MALICIOUS_185.220.100.242
+ network-object object MALICIOUS_185.220.101.182
+ network-object object MALICIOUS_45.134.26.16
+ network-object object MALICIOUS_94.102.57.152
+ network-object object MALICIOUS_94.156.68.116
+ network-object object MALICIOUS_45.135.232.12
+ network-object object MALICIOUS_45.135.232.83
+ network-object object MALICIOUS_193.143.1.62
+ network-object object MALICIOUS_94.131.97.7
+ network-object object MALICIOUS_94.131.8.92
+ network-object object MALICIOUS_5.182.39.158
+ network-object object MALICIOUS_95.164.18.92
+ network-object object MALICIOUS_94.156.64.231
+ network-object object MALICIOUS_94.156.64.35
+ network-object object MALICIOUS_94.156.64.233
+ network-object object MALICIOUS_94.156.64.211
+ network-object object MALICIOUS_94.156.64.166
+ network-object object MALICIOUS_94.156.64.241
+ network-object object MALICIOUS_94.156.64.229
+ network-object object MALICIOUS_94.156.64.226
+ network-object object MALICIOUS_94.156.64.31
+ network-object object MALICIOUS_94.156.67.57
+ network-object object MALICIOUS_94.156.64.176
+ network-object object MALICIOUS_94.156.64.230
+ network-object object MALICIOUS_94.156.64.212
+ network-object object MALICIOUS_94.156.64.36
+ network-object object MALICIOUS_94.156.64.47
+ network-object object MALICIOUS_94.156.64.227
+ network-object object MALICIOUS_91.92.255.67
+object-group service OKMS-KMC-REF-TLS tcp
+ port-object eq 7912
+object-group service OKMS-PKI-RA-REF-CMP tcp
+ port-object eq 8080
+object-group service OKMS-PKI-VA-REF-OCSP tcp
+ port-object eq 8080
+object-group network MALICIOUS-ADDRESSEs
+ network-object object MALICIOUS_5.182.38.62
+object-group network CAPKI-HSM-MGMT
+ description CA-PKI-HSM management ports in ARK Data Centres 
+ network-object object FBO_CAPKI-HSM-MGMT_10.84.159.2
+ network-object object CRS_CAPKI-HSM-MGMT_10.86.159.2
+object-group network THALES-NRT-SOLARWINDS-REMOTE-CONTROLLER
+ description Solarwinds Platform Remote Controllers based in ARK Data Centres
+ network-object object FBO_SOLARWINDS-REMOTE-CONT_10.84.59.130
+ network-object object CRS_SOLARWINDS-REMOTE-CONT_10.86.59.130
+object-group network THALES_MGMT_WS
+ description Thales management workstations based in Thales Reading and Crawley Data Centres 
+ network-object object THALES_MGMT_WS1_10.159.0.67
+ network-object object THALES_MGMT_WS2_10.159.0.68
+object-group service THALES-HSM-PED tcp
+ description Thales HSM Remote PED port
+ port-object eq 1503
+object-group service SOLARWINDS-FORWARDER tcp
+ description Solarwinds remote controller forwarder port 
+ port-object eq 17778
+object-group service THALES-HSM-NTLS tcp
+ description Thales HSM NTLS port
+ port-object eq 1792
+object-group service THALES_HSM_MGMT tcp
+ description Thales HSM MGMT ports
+ port-object eq ssh
+ group-object THALES-HSM-NTLS
+object-group network MALICIOUS
+object-group network MALICIOUS-AD$
+access-list inside_access_in extended permit object-group DM_INLINE_SERVICE_13 object-group DM_INLINE_NETWORK_1 any 
+access-list inside_access_in extended permit object WinRM(https) object DID-ASG object DID-MFA 
+access-list inside_access_in extended permit udp object-group DM_INLINE_NETWORK_6 any eq domain 
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_11 object DID-MFA object-group DM_INLINE_TCP_2 
+access-list inside_access_in extended permit tcp object DIDV03LX160 object-group NRDT_API object-group DM_INLINE_TCP_3 
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_4 object-group NRDT_Production_External_IPs object-group DM_INLINE_TCP_5 
+access-list inside_access_in extended permit ip object-group DM_INLINE_NETWORK_7 object DID-ASR-MGT 
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_9 object NRDT_AWS-RDS_Servers eq 19084 
+access-list inside_access_in remark SR 11623 - SS - 04-March-2022
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_12 object-group DM_INLINE_NETWORK_13 object-group htps_9443&443 
+access-list inside_access_in remark SR 11623 - SS - 04-March-2022
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_14 object-group DM_INLINE_NETWORK_15 object-group htps_9443&443 
+access-list inside_access_in remark OSG-IPSEC-CAPGEMINI-ARK-JUMPBOX-RDP
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_16 object-group DM_INLINE_NETWORK_17 object-group TCP_8443 
+access-list inside_access_in remark OSG-IPSEC-CAPGEMINI-ARK-BIGFIX-TEM
+access-list inside_access_in extended permit object-group TCPUDP object-group DM_INLINE_NETWORK_18 object-group DM_INLINE_NETWORK_19 object-group TCP_UDP_52311 
+access-list inside_access_in remark OSG-IPSEC-CAPGEMINI-ARK-BIGFIX-TEM
+access-list inside_access_in extended permit icmp object-group DM_INLINE_NETWORK_20 object-group DM_INLINE_NETWORK_21 
+access-list inside_access_in remark OSG-IPSEC-CAPGEMINI-ARK-SPLUNK-FORWARDER
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_22 object-group DM_INLINE_NETWORK_23 object-group DM_INLINE_TCP_23 
+access-list inside_access_in remark OSG-IPSEC-CAPGEMINI-ARK-SPLUNK-FORWARDER
+access-list inside_access_in extended permit object-group TCPUDP object-group DM_INLINE_NETWORK_24 object-group DM_INLINE_NETWORK_25 object-group DNS_TCP_UDP_53 
+access-list inside_access_in remark OSG-IPSEC-CAPGEMINI-ARK-JUMPBOX-DNS
+access-list inside_access_in extended permit object-group TCPUDP object-group DM_INLINE_NETWORK_26 object-group DM_INLINE_NETWORK_27 eq domain 
+access-list inside_access_in remark Atlassian Cloud Incoming Connections to API Gateway DNAT for CDP-hosted API Gateway Servers
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_28 object-group DM_INLINE_NETWORK_35 object-group htps_9443&443 
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_29 object-group DM_INLINE_NETWORK_36 object-group htps_9443&443 
+access-list inside_access_in remark Locken SaaS Incoming Connections from API Gateway for CDP-hosted API Gateway Prod Servers
+access-list inside_access_in extended permit tcp object-group DM_INLINE_NETWORK_34 object-group Locken_SaaS_External_IPs object-group DM_INLINE_TCP_35 
+access-list inside_access_in remark connectivity for the OKMS Reference environment based within Cody Park
+access-list inside_access_in extended permit tcp object ARKF_OKMS-REF-KMC_10.85.124.164 object ENIF_LAB-RBC_10.159.0.44 object-group OKMS-KMC-REF-TLS 
+access-list inside_access_in remark Mgmt of CA-PKI HSM based within ARK DCs - HSM PED - PW1118668 - NB - 02-10-2023
+access-list inside_access_in extended permit tcp object-group CAPKI-HSM-MGMT object-group THALES_MGMT_WS object-group THALES-HSM-PED 
+access-list inside_access_in remark Solarwinds Remote Controller forwarding to Thales Solarwinds - PW1118668 - NB - 02-10-2023
+access-list inside_access_in extended permit tcp object-group THALES-NRT-SOLARWINDS-REMOTE-CONTROLLER object THALES_SOLARWINDS_10.159.0.69 object-group SOLARWINDS-FORWARDER 
+access-list inside_access_in remark Solarwinds Remote Controller forwarding to Thales Solarwinds - PW1118668 - NB - 02-10-2023
+access-list inside_access_in remark Thales support of CA-PKI HSM based within ARK DCs - SR24048 - RT - 07-12-2023
+access-list inside_access_in extended permit tcp object CA_ERS_HSM_10.85.126.148 object-group THALES_MGMT_WS object-group THALES-HSM-PED 
+access-list AnyConnect_Client_Local_Print extended deny ip any4 any4 
+access-list AnyConnect_Client_Local_Print extended permit tcp any4 any4 eq lpd 
+access-list AnyConnect_Client_Local_Print remark IPP: Internet Printing Protocol
+access-list AnyConnect_Client_Local_Print extended permit tcp any4 any4 eq 631 
+access-list AnyConnect_Client_Local_Print remark Windows' printing port
+access-list AnyConnect_Client_Local_Print extended permit tcp any4 any4 eq 9100 
+access-list AnyConnect_Client_Local_Print remark mDNS: multicast DNS protocol
+access-list AnyConnect_Client_Local_Print extended permit udp any4 host 224.0.0.251 eq 5353 
+access-list AnyConnect_Client_Local_Print remark LLMNR: Link Local Multicast Name Resolution protocol
+access-list AnyConnect_Client_Local_Print extended permit udp any4 host 224.0.0.252 eq 5355 
+access-list AnyConnect_Client_Local_Print remark TCP/NetBIOS protocol
+access-list AnyConnect_Client_Local_Print extended permit tcp any4 any4 eq 137 
+access-list AnyConnect_Client_Local_Print extended permit udp any4 any4 eq netbios-ns 
+access-list mfa-vpn_access_in extended permit tcp object DID-MFA object DID-DC object-group DM_INLINE_TCP_1 
+access-list mfa-vpn_access_in extended permit object-group DM_INLINE_SERVICE_2 object DID-MFA object QRADAR 
+access-list mfa-vpn_access_in remark Allow email to the OSS SMTP relay server
+access-list mfa-vpn_access_in extended permit tcp object DID-MFA object SMTP-RELAY 
+access-list outside_access_in remark Block IP addresses deemed malicious by NRT SOC.
+access-list outside_access_in extended deny ip object-group MALICIOUS-ADDRESSES any inactive 
+access-list outside_access_in remark Block IP addresses deemed malicious by NRT SOC.
+access-list outside_access_in extended deny ip object MALICIOUS_91.240.118.9 any 
+access-list outside_access_in extended permit object-group DM_INLINE_SERVICE_1 object DID-VPN-USER object-group DM_INLINE_NETWORK_3 
+access-list outside_access_in remark PrivX PAM
+access-list outside_access_in extended permit object-group DM_INLINE_SERVICE_4 object DID-VPN-USER object-group DM_INLINE_NETWORK_10 
+access-list outside_access_in remark NRDT Production to API Gateway DNAT for CDP-hosted API Gateway Prod Servers
+access-list outside_access_in extended permit tcp object-group NRDT_Production_External_IPs object-group DM_INLINE_NETWORK_2 eq https 
+access-list outside_access_in remark NRDT Test to API Gateway DNAT for CDP-hosted API Gateway Test Servers
+access-list outside_access_in extended permit tcp object-group NRDT_Test_External_IPs object DIDV03LX160 eq 9443 
+access-list outside_access_in remark NRDT Test to API Gateway DNAT for CDP-hosted API Gateway E2E Test Servers
+access-list outside_access_in extended permit tcp object NRDT_E2E_External_IP object DIDV03LX276 object-group htps_9443&443 
+access-list outside_access_in remark Cap Gemini ServiceNow Production to API Gateway DNAT for CDP-hosted API Gateway Prod Servers
+access-list outside_access_in extended permit tcp object-group CapGemini_Servicenow_Production_External_IPs object-group API_GW_Ext_LBs_DIDC_MALC eq https 
+access-list outside_access_in remark Cap Gemini ServiceNow Test to API Gateway DNAT for CDP-hosted API Gateway Test Servers
+access-list outside_access_in extended permit tcp object-group CapGemini_Servicenow_Test_External_IPs object DIDV03LX160 eq 9443 
+access-list outside_access_in remark Cap Gemini ServiceNow Test to API Gateway DNAT for CDP-hosted API Gateway E2E Test Servers
+access-list outside_access_in extended permit tcp object-group CapGemini_Servicenow_Test_External_IPs object DIDV03LX276 eq 9443 
+access-list outside_access_in remark Atlassian Cloud Outgoing Connections to API Gateway DNAT for CDP-hosted API Gateway Prod Se
+access-list outside_access_in extended permit tcp object-group Atlassian_Cloud_External_IPs object-group DM_INLINE_NETWORK_33 eq https 
+access-list outside_access_in extended permit tcp object-group Atlassian_Cloud_External_IPs object-group DM_INLINE_NETWORK_31 object-group htps_9443&443 log debugging 
+access-list outside_access_in remark Locken SaaS Outgoing Connections to API Gateway for CDP-hosted API Gateway Prod
+access-list outside_access_in extended permit tcp object-group Locken_SaaS_External_IPs object-group DM_INLINE_NETWORK_37 eq https 
+access-list outside_access_in remark Locken SaaS Outgoing Connections to API Gateway for CDP-hosted API Gateway Test and E2E Test Servers
+access-list outside_access_in extended permit tcp object-group Locken_SaaS_External_IPs object-group DM_INLINE_NETWORK_38 object-group DM_INLINE_TCP_4 
+access-list asr-mgt_access_in_1 extended permit object syslog object DID-ASR-MGT object QRADAR 
+access-list asr-mgt_access_in_1 extended permit object-group DM_INLINE_SERVICE_3 object DID-ASR-MGT object-group DM_INLINE_NETWORK_8 
+access-list AnyConnect_SplitDNS standard permit host 8.8.8.8 
+access-list CGM-ARK-IKE-FLOW extended permit object-group CAP_RDP_JUMPBOXES object-group OSG-D_IPSEC_CAP_GEMINI object-group ARK_CAP_GEMINI_RDS_SERVERS 
+access-list CGM-ARK-IKE-FLOW extended permit object-group CAP_BIGFIX_TEM object-group OSG-D_IPSEC_CAP_GEMINI object-group ARK_CAP_GEMINI_BIGFIX_TEM_RELAYS 
+access-list CGM-ARK-IKE-FLOW extended permit object-group CAP_OPSVIEW object-group OSG-D_IPSEC_CAP_GEMINI object-group ARK_CAP_GEMINI_OPSVIEW 
+access-list CGM-ARK-IKE-FLOW extended deny ip any any 
+access-list osg_vpn_outside_in_control_plane extended deny ip object-group MALICIOUS-ADDRESSES any 
+access-list osg_vpn_outside_in_control_plane extended permit ip any any 
+access-list OKMS-LAB-ENIF-FLOW remark VPN for the OKMS Reference environment based Cody Park Data Centre 
+access-list OKMS-LAB-ENIF-FLOW extended permit tcp object ENIF_LAB-OBU_10.159.0.41 object ARKF_OKMS-REF-KMC_10.85.124.164 object-group OKMS-KMC-REF-TLS 
+access-list OKMS-LAB-ENIF-FLOW extended permit tcp object ENIF_LAB-OBU_10.159.0.41 object ARKF_OKMS-REF-PKI-RA_10.85.124.8 object-group OKMS-PKI-RA-REF-CMP 
+access-list OKMS-LAB-ENIF-FLOW extended permit tcp object ENIF_LAB-RBC_10.159.0.44 object ARKF_OKMS-REF-PKI-RA_10.85.124.8 object-group OKMS-PKI-RA-REF-CMP 
+access-list OKMS-LAB-ENIF-FLOW extended permit tcp object ENIF_LAB-OBU_10.159.0.41 object ARKF_OKMS-REF-PKI-VA_10.85.124.16 object-group OKMS-PKI-VA-REF-OCSP 
+access-list OKMS-LAB-ENIF-FLOW extended permit tcp object ENIF_LAB-RBC_10.159.0.44 object ARKF_OKMS-REF-PKI-VA_10.85.124.16 object-group OKMS-PKI-VA-REF-OCSP 
+access-list OKMS-LAB-ENIF-FLOW extended deny ip any any log debugging 
+access-list THALES_ROUTES_OUT remark - CA-PKI Prod FBO Address range
+access-list THALES_ROUTES_OUT standard permit 10.84.52.0 255.255.255.0 
+access-list THALES_ROUTES_OUT remark - CA-PKI Prod FBO Server range
+access-list THALES_ROUTES_OUT standard permit 10.84.62.0 255.255.255.0 
+access-list THALES_ROUTES_OUT remark - CA-PKI Prod FBO HSM Subnet
+access-list THALES_ROUTES_OUT standard permit 10.84.158.0 255.255.255.248 
+access-list THALES_ROUTES_OUT remark - CA-PKI MGMT FBO HSM Subnet
+access-list THALES_ROUTES_OUT standard permit 10.84.159.0 255.255.255.248 
+access-list THALES_ROUTES_OUT remark - CA-PKI Prod CRS Address range
+access-list THALES_ROUTES_OUT standard permit 10.86.52.0 255.255.255.0 
+access-list THALES_ROUTES_OUT remark - CA-PKI Prod CRS Server range
+access-list THALES_ROUTES_OUT standard permit 10.86.62.0 255.255.255.0 
+access-list THALES_ROUTES_OUT remark - CA-PKI Prod CRS HSM Subnet
+access-list THALES_ROUTES_OUT standard permit 10.86.158.0 255.255.255.248 
+access-list THALES_ROUTES_OUT remark - CA-PKI MGMT CRS HSM Subnet
+access-list THALES_ROUTES_OUT standard permit 10.86.159.0 255.255.255.248 
+access-list THALES_ROUTES_OUT remark - Solarwinds FBO Subnet
+access-list THALES_ROUTES_OUT standard permit 10.84.59.128 255.255.255.240 
+access-list THALES_ROUTES_OUT remark - Solarwinds CRS Subnet
+access-list THALES_ROUTES_OUT standard permit 10.86.59.128 255.255.255.240 
+access-list THALES_ROUTES_OUT remark - OKMS Live - CRS
+access-list THALES_ROUTES_OUT standard permit 10.86.124.0 255.255.252.0 
+access-list THALES_ROUTES_OUT remark - OKMS Standby - FBO
+access-list THALES_ROUTES_OUT standard permit 10.84.124.0 255.255.252.0 
+access-list THALES_ROUTES_OUT remark - OKMS Reference - FBO
+access-list THALES_ROUTES_OUT standard permit 10.85.124.0 255.255.252.0 
+access-list THALES_ROUTES_IN remark - THALES SNAT Range
+access-list THALES_ROUTES_IN standard permit 10.159.0.64 255.255.255.248 
+access-list THALES-MAINTAINER-FLOW remark Thales support of CA-PKI HSM based within ARK DCs - PW1118668 - NB - 02-10-2023
+access-list THALES-MAINTAINER-FLOW extended permit tcp object-group THALES_MGMT_WS object-group CAPKI-HSM-MGMT object-group THALES_HSM_MGMT 
+access-list THALES-MAINTAINER-FLOW remark Thales support of CA-PKI HSM based within ARK DCs - SR24048 - RT - 07-12-2023
+access-list THALES-MAINTAINER-FLOW extended permit tcp object-group THALES_MGMT_WS object CA_ERS_HSM_10.85.126.148 object-group THALES-HSM-NTLS 
+access-list THALES-MAINTAINER-FLOW extended deny ip any any log debugging 
+pager lines 24
+logging enable
+logging timestamp
+logging list sla-mon message 622001
+logging buffer-size 524288
+logging monitor notifications
+logging buffered informational
+logging trap informational
+logging history notifications
+logging asdm informational
+logging facility 23
+logging device-id hostname
+logging host management 10.16.0.134
+logging host management 10.16.98.90
+logging host management 10.16.142.129
+logging message 622001 level warnings
+mtu outside 1500
+mtu inside 1500
+mtu mfa-vpn 1500
+mtu asr-mgt 1500
+mtu management 1500
+ip verify reverse-path interface outside
+failover
+failover lan unit primary
+failover lan interface failover GigabitEthernet1/8
+failover key 8 WNUnNXH/Ip+3JkpvfI4FvG+sNQ==
+failover link failover GigabitEthernet1/8
+failover interface ip failover 10.17.20.249 255.255.255.252 standby 10.17.20.250
+no failover wait-disable
+no monitor-interface asr-mgt
+icmp unreachable rate-limit 1 burst-size 1
+icmp permit host 194.72.26.160 outside
+icmp deny any outside
+icmp permit 10.16.98.0 255.255.255.0 management
+icmp permit 10.16.142.0 255.255.255.0 management
+asdm image disk0:/asdm-7181-152.bin
+no asdm history enable
+arp timeout 14400
+no arp permit-nonconnected
+arp rate-limit 16384
+nat (inside,outside) source static DM_INLINE_NETWORK_5 DID-ASG-NAT
+nat (outside,inside) source dynamic any DID-INET-SNAT destination static DIDC01LX120-NAT DIDC01LX120 description API Gateway Inbound Internet Traffic to DIDC01LX120
+nat (outside,inside) source dynamic any DID-INET-SNAT destination static DIDC01LX120-NAT DIDC01LX120 description API Gateway Inbound Internet Traffic to DIDC01LX120
+nat (outside,inside) source dynamic any DID-INET-SNAT destination static MALC01LX95-NAT MALC01LX95 description API Gateway Inbound Internet Traffic to MALC01LX95
+nat (outside,inside) source dynamic any DID-INET-SNAT destination static DIDV03LX160-NAT DIDV03LX160 description API Gateway Inbound Internet Traffic to DIDV03LX160
+nat (outside,inside) source dynamic any DID-INET-SNAT destination static DIDV03LX276-NAT DIDV03LX276
+!
+object network DID-VPN-USER
+ nat (any,any) static DID-VPN-NAT net-to-net
+access-group osg_vpn_outside_in_control_plane in interface outside control-plane
+access-group outside_access_in in interface outside
+access-group inside_access_in in interface inside
+access-group mfa-vpn_access_in in interface mfa-vpn
+access-group asr-mgt_access_in_1 in interface asr-mgt
+access-group CGM-ARK-IKE-FLOW in interface vti-outside-vpn-CGM
+access-group OKMS-LAB-ENIF-FLOW in interface vti-outside-vpn-ATK_OKMS
+access-group THALES-MAINTAINER-FLOW in interface vti-outside-vpn-THALES_PRIMARY
+access-group THALES-MAINTAINER-FLOW in interface vti-outside-vpn-THALES_TERTIARY
+!
+prefix-list OSG-IN description OSG-IN
+prefix-list OSG-IN seq 5 permit 10.16.22.32/28
+prefix-list OSG-IN seq 10 permit 10.16.30.32/28
+prefix-list OSG-IN seq 15 permit 10.16.22.48/28
+prefix-list OSG-IN seq 20 permit 172.18.16.0/24
+prefix-list OSG-IN seq 25 permit 10.16.0.134/32
+!
+!
+route-map AS_PREPEND_TERTIARY_IN permit 10
+ match ip address THALES_ROUTES_IN
+ set as-path prepend 64990 64990
+!
+route-map AS_PREPEND_PRIMARY_OUT permit 10
+ match ip address THALES_ROUTES_OUT
+!
+route-map AS_PREPEND_TERTIARY_OUT permit 10
+ match ip address THALES_ROUTES_OUT
+ set as-path prepend 64990 64990
+!
+route-map AS_PREPEND_PRIMARY_IN permit 10
+ match ip address THALES_ROUTES_IN
+!
+router bgp 64990
+ bgp log-neighbor-changes
+ bgp graceful-restart
+ address-family ipv4 unicast
+  neighbor 10.159.128.49 remote-as 65190
+  neighbor 10.159.128.49 route-map AS_PREPEND_PRIMARY_IN in
+  neighbor 10.159.128.49 route-map AS_PREPEND_PRIMARY_OUT out
+  neighbor 10.159.128.57 remote-as 65190
+  neighbor 10.159.128.57 password 0 *****
+  neighbor 10.159.128.57 activate
+  neighbor 10.159.128.57 route-map AS_PREPEND_TERTIARY_IN in
+  neighbor 10.159.128.57 route-map AS_PREPEND_TERTIARY_OUT out
+  neighbor 10.17.20.225 remote-as 64999
+  neighbor 10.17.20.225 password 0 *****
+  neighbor 10.17.20.225 activate
+  neighbor 10.17.20.226 remote-as 64999
+  neighbor 10.17.20.226 password 0 *****
+  neighbor 10.17.20.226 activate
+  network 0.0.0.0
+  network 10.17.20.0 mask 255.255.254.0
+  network 67.204.115.0 mask 255.255.255.0
+  network 100.117.128.0 mask 255.255.192.0
+  network 10.159.0.40 mask 255.255.255.248
+  no auto-summary
+  no synchronization
+ exit-address-family
+!
+router ospf 1
+ router-id 1.1.1.1
+ network 10.1.1.0 255.255.255.0 area 0
+ network 192.168.1.0 255.255.255.0 area 0
+ area 0 authentication message-digest
+ log-adj-changes detail
+
+interface GigabitEthernet0/0
+ nameif outside
+ security-level 0
+ ip address 10.1.1.1 255.255.255.0
+ ospf authentication message-digest
+ ospf message-digest-key 1 md5 cisco123
+ ospf cost 10
+ ospf priority 255
+
+interface GigabitEthernet0/1
+ nameif inside
+ security-level 100
+ ip address 192.168.1.1 255.255.255.0
+ ospf authentication message-digest
+ ospf message-digest-key 1 md5 cisco123
+ ospf cost 1
+!
+route outside 0.0.0.0 0.0.0.0 194.72.85.174 1 track 1
+route management 10.16.0.134 255.255.255.255 10.16.80.129 1
+route inside 10.16.22.0 255.255.255.0 10.17.20.225 1
+route management 10.16.22.68 255.255.255.255 10.16.80.129 1
+route inside 10.16.30.0 255.255.255.0 10.17.20.225 1
+route management 10.16.80.31 255.255.255.255 10.16.80.129 1
+route management 10.16.80.35 255.255.255.255 10.16.80.129 1
+route management 10.16.80.36 255.255.255.255 10.16.80.129 1
+route management 10.16.80.37 255.255.255.255 10.16.80.129 1
+route management 10.16.80.38 255.255.255.255 10.16.80.129 1
+route management 10.16.80.39 255.255.255.255 10.16.80.129 1
+route management 10.16.80.41 255.255.255.255 10.16.80.129 1
+route management 10.16.80.69 255.255.255.255 10.16.80.129 1
+route management 10.16.88.35 255.255.255.255 10.16.80.129 1
+route management 10.16.88.36 255.255.255.255 10.16.80.129 1
+route management 10.16.88.37 255.255.255.255 10.16.80.129 1
+route management 10.16.88.38 255.255.255.255 10.16.80.129 1
+route management 10.16.88.39 255.255.255.255 10.16.80.129 1
+route management 10.16.88.41 255.255.255.255 10.16.80.129 1
+route management 10.16.96.0 255.255.252.0 10.16.80.129 1
+route management 10.16.140.0 255.255.252.0 10.16.80.129 1
+route Null0 10.17.20.0 255.255.254.0 1
+route vti-outside-vpn-ATK_OKMS 10.159.0.40 255.255.255.248 10.159.128.42 1
+route vti-outside-vpn-CGM 67.204.115.0 255.255.255.0 10.159.128.2 1
+route vti-outside-vpn-CGM 100.117.128.0 255.255.192.0 10.159.128.2 1
+timeout xlate 3:00:00
+timeout pat-xlate 0:00:30
+timeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 sctp 0:02:00 icmp 0:00:02
+timeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00
+timeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00
+timeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute
+timeout tcp-proxy-reassembly 0:01:00
+timeout floating-conn 0:00:00
+timeout conn-holddown 0:00:15
+timeout igp stale-route 0:01:10
+aaa-server OSG protocol radius
+aaa-server OSG (mfa-vpn) host 10.17.20.246
+ key 8 kO1me4n3wV4wjOxjpkQZqHSlww==
+ authentication-port 1812
+ accounting-port 1813
+ no mschapv2-capable
+user-identity default-domain LOCAL
+aaa authentication serial console LOCAL 
+aaa authentication ssh console LOCAL 
+aaa authentication http console LOCAL 
+aaa authorization command LOCAL 
+aaa local authentication attempts max-fail 3
+aaa authorization exec LOCAL auto-enable
+aaa authentication login-history
+filter java 443 0.0.0.0 0.0.0.0 0.0.0.0 0.0.0.0 
+filter activex 443 0.0.0.0 0.0.0.0 0.0.0.0 0.0.0.0 
+http server session-timeout 5
+http 10.16.22.68 255.255.255.255 management
+http 10.16.80.69 255.255.255.255 management
+snmp-server group PrimeGrp v3 auth 
+snmp-server group SolarGrp v3 priv 
+snmp-server user SolarUsr SolarGrp v3 engineID 80000009fe2108c18c19eb549486ce84353409d425e66a828c encrypted auth sha a1:2e:5e:e6:db:ee:24:45:3d:7c:1c:3f:fa:8f:78:c5:1e:22:3b:fa priv aes 128 27:cc:fd:87:c9:bb:4b:76:3d:8d:e8:16:82:bd:90:ab 
+! The following host entries are incomplete; they await a community string.
+snmp-server host management 10.16.80.35 trap
+snmp-server host management 10.16.88.35 trap
+no snmp-server location
+no snmp-server contact
+snmp-server enable traps syslog
+snmp-server enable traps ipsec start stop
+snmp-server enable traps memory-threshold
+snmp-server enable traps interface-threshold
+snmp-server enable traps remote-access session-threshold-exceeded
+snmp-server enable traps connection-limit-reached
+snmp-server enable traps cpu threshold rising
+snmp-server enable traps ikev2 start stop
+snmp-server enable traps nat packet-discard
+snmp-server enable traps config
+fragment chain 1 outside
+sla monitor 1
+ type echo protocol ipIcmpEcho 194.72.26.160 interface outside
+ num-packets 3
+ timeout 2000
+ threshold 2000
+ frequency 2
+sla monitor schedule 1 life forever start-time now
+no service password-recovery
+service sw-reset-button
+crypto ipsec ikev2 ipsec-proposal NRT_TSET
+ protocol esp encryption aes-gcm-256 aes-gcm-192 aes-gcm aes-256 aes-192 aes
+ protocol esp integrity sha-512 sha-384 sha-256 null
+crypto ipsec ikev2 ipsec-proposal IKEv2-CGM-ARK
+ protocol esp encryption aes-256
+ protocol esp integrity sha-256
+crypto ipsec ikev2 ipsec-proposal AES256GCM
+ protocol esp encryption aes-gcm-256
+ protocol esp integrity null
+crypto ipsec ikev2 ipsec-proposal AES256
+ protocol esp encryption aes-256
+ protocol esp integrity sha-1
+crypto ipsec profile NRT_IPSEC_PROFILE
+ set ikev2 ipsec-proposal NRT_TSET
+ set pfs group19
+ set security-association lifetime kilobytes unlimited
+ set security-association lifetime seconds 3600
+crypto ipsec profile IPsec-CGM-ARK
+ set ikev2 ipsec-proposal IKEv2-CGM-ARK
+ set pfs group14
+ set security-association lifetime kilobytes unlimited
+ set security-association lifetime seconds 3600
+crypto ipsec security-association pmtu-aging infinite
+crypto dynamic-map SYSTEM_DEFAULT_CRYPTO_MAP 65535 set ikev2 ipsec-proposal AES256 AES256GCM
+crypto map outside_map 65535 ipsec-isakmp dynamic SYSTEM_DEFAULT_CRYPTO_MAP
+crypto map outside_map interface outside
+crypto ca trustpoint OSG
+ enrollment self
+ subject-name CN=DIDC-FIRE-08
+ proxy-ldc-issuer
+ crl configure
+crypto ca trustpoint OSG_South
+ enrollment self
+ fqdn OSG-South.vpn.local
+ subject-name CN=OSG South
+ keypair OSG
+ proxy-ldc-issuer
+ crl configure
+crypto ca trustpoint OSG_VPN
+ enrollment self
+ fqdn OSG-South.vpn.local
+ subject-name CN=OSG South
+ keypair OSG_VPN
+ crl configure
+crypto ca trustpoint vpngw1
+ keypair vpngw1
+ crl configure
+crypto ca trustpool policy
+crypto ca certificate chain OSG
+ certificate 0a69cc58
+    3082056d 30820355 a0030201 0202040a 69cc5830 0d06092a 864886f7 0d01010b 
+    05003046 31153013 06035504 03130c44 4944432d 46495245 2d303831 2d302b06 
+    092a8648 86f70d01 0902161e 44494443 2d464952 452d3038 2e6f7073 2e6e7274 
+    656c6563 6f6d2e6e 6574301e 170d3137 30343036 30393331 30375a17 0d323730 
+    34303430 39333130 375a3046 31153013 06035504 03130c44 4944432d 46495245 
+    2d303831 2d302b06 092a8648 86f70d01 0902161e 44494443 2d464952 452d3038 
+    2e6f7073 2e6e7274 656c6563 6f6d2e6e 65743082 0222300d 06092a86 4886f70d 
+    01010105 00038202 0f003082 020a0282 020100ad df1279b3 1a67581c a601c8ed 
+    e377da64 092bb78d 08e88001 77b1591e ef207bd2 8c4f8e33 ba465602 2adf6dd7 
+    4c4282ea 51dbf1f7 0499fe65 5a641acd 1ee8575b bdf64ec6 e57db670 923c5d3b 
+    671954b4 60a50de0 eb1912c9 6945480b fa9f7b9b 88b75b24 31039df6 9e21ee31 
+    e6a202f8 ceb44cd4 6b3d777a 0230d904 1266f6dc 8327f25e 3c2ede74 a03db8ed 
+    7d208e58 374aa3c1 b7006f40 830b23f2 53ff4616 16dbd5bb 05ab7cd4 c9c9f5c0 
+    cc882814 f5873e9e c6b50484 587caa87 0ad9d287 ca479152 0570e0c6 7f940d77 
+    ed5075dd 70f6948c 1aad8959 6257106c 58aca06a fc4bebf6 787ac472 de924111 
+    dc81743c 469f870e 6e1455d0 9642e2ff 2edceec9 6e9e2757 12c6e57b e4bd0719 
+    e53f1df1 ff71fce5 e0237a92 82d64fb8 faccc2f9 057e0266 5bd0a998 c89ffea6 
+    37288d8f 1751a594 c3a3bd83 8bdd691f 719b7d0d f67992d9 c2ef035e 4a8f3255 
+    60096c07 d73f1039 f5cb8b6a d16cc9f4 5957b94f cd2a6dc4 e6be1a92 d0260c82 
+    5963600d c3697ff6 faf484a8 ba598de9 9b6ba92a ee097140 3c3808c9 1c58df78 
+    79df3f1f d9418cfc 4e9338b6 be4e9b82 563879c3 f2c71da0 db5dbb0a 385a3186 
+    ca5bb095 2970f704 218247bd 728cd758 29d07285 99a47bfa bddb82f1 842f8547 
+    35cdf835 81af046c 01fb3a75 0bca9930 bb55c827 7b604c4a 275badec 658bc721 
+    4e919d11 ed76a716 9fc5fa32 cdef9be8 9cc01502 03010001 a3633061 300f0603 
+    551d1301 01ff0405 30030101 ff300e06 03551d0f 0101ff04 04030201 86301f06 
+    03551d23 04183016 8014d23c fdf8b0a7 b8c7f856 e70e63e2 dd27a737 948c301d 
+    0603551d 0e041604 14d23cfd f8b0a7b8 c7f856e7 0e63e2dd 27a73794 8c300d06 
+    092a8648 86f70d01 010b0500 03820201 006efab1 a401796b 3d0760d8 85c3e7d4 
+    89d7c899 fd6f63e0 0992b94b 0e1c5976 9ad4a010 d5f2b3d0 c375ec18 3be4636a 
+    3b343786 0dafccf0 cdaff2be 92a406d3 c3f5ceec d19670ca f3fc0424 8a3a799d 
+    2b82da64 e2e23e1e 11747f69 1edc1443 7714b8e0 d1128dba deb4c177 b14a157e 
+    2be4b4e4 cafbf35e 9d03f0de 462d7932 254228ae e7801e5a 57862b3e 75e72ea1 
+    c5169a0b d8e9ccf5 82e4ff7b 2b7903f9 a50040d5 a71c03ee 2f30bb7f c14099dd 
+    e053bda6 d766eb4e ecc86292 221e5a04 a0d15f13 157d8bfd 33d679fa f63868af 
+    11e5a63f f4afd9f5 f848c513 fcc4c88e e30cdfca 6f7d1c0e 47e7180a bc65ce76 
+    97ef1be7 53c1e510 814b6fb6 51f51245 1ef3ee39 e182405f 271de76b d276a4eb 
+    a7450265 5c52c381 53e8615f 7cebaa24 83d8b150 008d050b 7739eebb 08460cb4 
+    9015c334 31e38bf3 a0236381 6b9453b6 42b13ffb 4c45250a bf260aad 64382ec3 
+    74ab1f20 94675d59 240027c9 11743730 119cb211 9d3e139e 9d64d2f2 cf34aedf 
+    c220d2c2 037e5d4a aa59bf59 13cbb916 3777bb98 0d139da5 26a5e350 53e213b7 
+    c05627f0 8e08f1f9 2949bd08 6231785e f2260595 e00798d2 21c0a85e b6905a82 
+    2bf4fe3a f590fcc8 680647ec 78dbb095 fa8d994d 1d9296fd 7340741e 4f1d818c 
+    81a4e0de b09aed20 c897caec efef1117 ac4eb373 300d8e30 bcdc1a76 78fe7129 
+    4243c059 aad5c252 6385316a 216aeff3 94
+  quit
+crypto ca certificate chain OSG_VPN
+ certificate 63a030a6
+    308204ec 308202d4 a0030201 0202049c 5fcf5a30 0d06092a 864886f7 0d01010b 
+    05003038 31123010 06035504 0313094f 53472053 6f757468 31223020 06092a86 
+    4886f70d 01090216 134f5347 2d536f75 74682e76 706e2e6c 6f63616c 301e170d 
+    31383132 31383130 30303330 5a170d32 38313231 35313030 3033305a 30383112 
+    30100603 55040313 094f5347 20536f75 74683122 30200609 2a864886 f70d0109 
+    0216134f 53472d53 6f757468 2e76706e 2e6c6f63 616c3082 0222300d 06092a86 
+    4886f70d 01010105 00038202 0f003082 020a0282 0201009a c125e69a d9ae6ab8 
+    ed27b6e0 376aaafb c1d254a8 03d2a30b 68e15463 52432bcd 8eaf4428 1af4a664 
+    1bd9693e d843ff60 2e6ac027 2cb6fe33 35374588 e23f55ea 1cb63a5b 85fc5c97 
+    6b1742d3 e1275f34 52d23822 f708ad64 4ff73ee4 85200a2c db4a4486 383103f8 
+    c40321da 35e0310e 9bb97ef2 f58a8a0e f41a717c aab2771b cf0460a7 4495da6c 
+    fb7438b4 55f0a45d c24458cc c3733129 1196cb44 1a0ab918 6fe45eb3 772b485e 
+    2617ce03 12bd188a 49a5a3a6 9bad8ee7 a73352cf fd161621 fc8eee71 d1f7bd75 
+    6290f60f 07584b12 b56d20ec d600af92 ebccc258 e3cab790 ac1b2447 c5eab1da 
+    c1361b01 b3331c1f 0507bb4c da541fea 717dd31f b8272b30 577f4861 3ca216c2 
+    290daa8a 3eb9c33f a855ab30 03413932 d0fe068c 00019c6e e106af47 bd79e126 
+    1400ea5d cf0b17d7 feba6dd2 4b3af52c dc71e84e 8ba54c73 2a6e249c 01f045a6 
+    fb1662aa 14d808d8 c87352f8 bf807b88 834d9eec 1dcb68e3 ceb2acdc faab7bd1 
+    4c364166 9ed23d15 aee4f5d1 e4a8dbd4 b5e7eaaa f4093423 1c40f889 776865ef 
+    1d3cf02d bb217a2c 7ef163db 1eefd04e 58800b49 f64d9bf5 7b879f46 71eed962 
+    816ea203 7ed7056f 6714d658 1844ec10 d1d84faf e84d4b93 29ae6b67 af0c64ed 
+    aa4662e1 846c744b 6b3b17a7 4ec7c6dc 69c6bbc5 49384c5b 3b192c12 6f89673e 
+    5d0b2214 92dc21b0 2772e483 de060da5 64768d99 64feb302 03010001 300d0609 
+    2a864886 f70d0101 0b050003 82020100 1797175b 0c5c799f 3d6e6bbd 474007b1 
+    dc8850be c9b9c3f0 80229430 234d8181 11ebe6a6 277e11cc 9c0d6fb6 55901750 
+    49a48722 7cb33cc9 0e49384e 80bae05b 3dee0f5f 94810a2f 40881a67 87d73d5c 
+    d7ce2ac8 7df7d730 a58029af 465dd687 95fc4b9f bd7396b9 72a711dc 290f2610 
+    117c5abf 8d95862d 407fa52c 2f80741e 8e7c4c5b 7162e70b 204f1b38 0193d59f 
+    297c85c6 dc77d029 f8a4faca 0ae04049 d53269ec 27e1438b b23ce05a bca73c6a 
+    b5545874 35ac00e4 035bf4bb 1456cd16 a48df2bb d4a0cee1 0c45465c d26a3ad3 
+    3c165d55 f19854b8 e5728dd7 a08e5e78 1bd1ab80 10f38afe 5e485310 7eaf1b44 
+    bca2939a 43946f9e ea3b55e1 5d1710e2 985867af ecb9db4e 16417dcf c6c69ea2 
+    217debfa 647813f3 f438a3e2 608a496a 8e9ecfce a6df2b78 36f4a7e8 28bda1df 
+    8b471053 523d880e c86e5cdb b223ab62 03f93a69 871e56bf 003f9770 21e6e25f 
+    e9975e41 cc76d012 00e0ff09 dbc097c5 6f3fa187 c10da5d4 95bac85a 77c3554c 
+    67cb12e9 fcfc60e8 4681921b 0cb72cec b1576649 91d9b698 bae364b4 a1f890f2 
+    e66c938b ffba1acf 37cd7b93 3c19f242 4574c3b0 02fac28e b66ffc0c d85c0d3a 
+    03cbc55c a7df81a4 b4d50316 5aa17f9b 52fd6b09 e4cecf97 d96e8913 78430f6a 
+    2623b895 0a7fe028 489c9653 e0553e6c b9338291 6ff47081 af5678c4 f02a12fe 
+    38e919f0 94fe507c bd766f47 cdc4d5d2
+  quit
+crypto ca certificate chain vpngw1
+ certificate ca 0546fe1823f7e1941da39fce14c46173
+    3082048b 30820373 a0030201 02021005 46fe1823 f7e1941d a39fce14 c4617330 
+    0d06092a 864886f7 0d01010b 05003061 310b3009 06035504 06130255 53311530 
+    13060355 040a130c 44696769 43657274 20496e63 31193017 06035504 0b131077 
+    77772e64 69676963 6572742e 636f6d31 20301e06 03550403 13174469 67694365 
+    72742047 6c6f6261 6c20526f 6f742043 41301e17 0d313731 31303631 32323334 
+    355a170d 32373131 30363132 32333435 5a305e31 0b300906 03550406 13025553 
+    31153013 06035504 0a130c44 69676943 65727420 496e6331 19301706 0355040b 
+    13107777 772e6469 67696365 72742e63 6f6d311d 301b0603 55040313 1447656f 
+    54727573 74205253 41204341 20323031 38308201 22300d06 092a8648 86f70d01 
+    01010500 0382010f 00308201 0a028201 0100bf8a d1634de1 18ea875d e8163c8f 
+    7fb6be87 1737a40c f8313f9f 45544021 d79d079b ca03234a bd9bed85 02633f9f 
+    85b9ec28 eff28622 dbf84d54 41c5b442 7fcf3317 010e8290 52d3c734 a4c1a101 
+    da32a040 ad1f59e4 33fca0c3 96ac686c d3e89973 8c261077 cbb73f39 32e8d259 
+    28ee0786 e2093b85 f8aa69f6 a96b9f58 ad72c85b 8766ae08 e074fb2d 53436283 
+    3d8f854c 1197dc1e fc5030b8 8308325e 5c5cc4e1 75204aeb a5d6752d dc2d7d7c 
+    e0d0fe7c 75a14e40 02849ad9 0d5a2ea0 acf3358a 2aead65a 5a6c8e2c abf6defd 
+    78472679 7aaa22ea a9e67112 03d3f8ba 53d2799c bd64acf6 1b63bb4d 8f3802f8 
+    f0575dc5 aa255a0c 5dc530fe 2053196c e9c30203 010001a3 82014030 82013c30 
+    1d060355 1d0e0416 04149058 ffb09c75 a8515477 b1edf2a3 4316389e 6cc5301f 
+    0603551d 23041830 16801403 de503556 d14cbb66 f0a3e21b 1bc397b2 3dd15530 
+    0e060355 1d0f0101 ff040403 02018630 1d060355 1d250416 30140608 2b060105 
+    05070301 06082b06 01050507 03023012 0603551d 130101ff 04083006 0101ff02 
+    01003034 06082b06 01050507 01010428 30263024 06082b06 01050507 30018618 
+    68747470 3a2f2f6f 6373702e 64696769 63657274 2e636f6d 30420603 551d1f04 
+    3b303930 37a035a0 33863168 7474703a 2f2f6372 6c332e64 69676963 6572742e 
+    636f6d2f 44696769 43657274 476c6f62 616c526f 6f744341 2e63726c 303d0603 
+    551d2004 36303430 32060455 1d200030 2a302806 082b0601 05050702 01161c68 
+    74747073 3a2f2f77 77772e64 69676963 6572742e 636f6d2f 43505330 0d06092a 
+    864886f7 0d01010b 05000382 01010030 f187553d 8408fc2e 5e6aba7c d2cdd52c 
+    e3be02da 5d8977ed f4e956c0 92f02a55 2d45f71c 2a3f105b f3e9e1be e1e90025 
+    b9f7a3c1 031be39e 4e8e921b 099552f9 ac18fd1f 29018b17 0a7334f4 671255ee 
+    22bccb30 ca80993f fbcf127f cb3d1847 85d8143e 4f0c943f 7bf511a8 516cfba8 
+    6030a890 a18b6f2e 45db37b6 1c7ebd16 5921b132 67ad8da3 4b493f3b 12192cfc 
+    9d0fff8c ff01230a f3040507 e5670101 b9af8167 eb29cbaf f8fc863e a45c7384 
+    f9e53973 ac19f303 3677a029 68f5f4ef 3bd3ee88 730aac2e 95ea6822 d2cdac6b 
+    f81b5e53 c20fd676 e1750cc4 9125c085 530ee281 d10e1830 c967a4df d00a1278 
+    074005b1 0f835343 423be7fb f177fb
+  quit
+ certificate 030c0d9f428338a947ca2422aa798c16
+    3082068e 30820576 a0030201 02021003 0c0d9f42 8338a947 ca2422aa 798c1630 
+    0d06092a 864886f7 0d01010b 0500305e 310b3009 06035504 06130255 53311530 
+    13060355 040a130c 44696769 43657274 20496e63 31193017 06035504 0b131077 
+    77772e64 69676963 6572742e 636f6d31 1d301b06 03550403 13144765 6f547275 
+    73742052 53412043 41203230 3138301e 170d3232 30313036 30303030 30305a17 
+    0d323330 31303632 33353935 395a306e 310b3009 06035504 06130247 42310f30 
+    0d060355 04071306 4c6f6e64 6f6e312c 302a0603 55040a13 234e6574 776f726b 
+    20526169 6c20496e 66726173 74727563 74757265 204c696d 69746564 3120301e 
+    06035504 03131776 706e6777 312e6f73 672e6e72 74656c65 636f6d2e 756b3082 
+    0122300d 06092a86 4886f70d 01010105 00038201 0f003082 010a0282 010100bf 
+    2561b9d4 f18d680d 256f3cdc df2716d0 2067e138 17930541 44bdf496 cfbf1c1d 
+    f6f07974 0e223bdc 0d362e8b 2d47e764 4f85537e c016a496 c5962ec8 84ea207c 
+    67427c27 13758148 5510d3ac 1dd7aa5f e6210efc 0bdf7951 be2ae07c 72235603 
+    ff5c90bc 7e1f5a6b 4f1e79c6 4b495d92 6913f33d 335e90ed 3ca3c887 e8fe7115 
+    39903716 d99e0ec9 8bb38626 544b3092 a6822c14 8247be98 ba954562 95282e12 
+    369175e9 b5fd070f 1a0451c1 72696526 69939b49 c30f2036 8a8152ca 145a655b 
+    e0bd5b47 49ded3ab d732ae51 8101d079 7368c339 e056face e662704c f86b792c 
+    bb219424 49d81243 44ce21eb 74d49f7e 17e5197f 47e2d1e7 576c3b85 c386ed02 
+    03010001 a3820336 30820332 301f0603 551d2304 18301680 149058ff b09c75a8 
+    515477b1 edf2a343 16389e6c c5301d06 03551d0e 04160414 d543341a eb957516 
+    6a3d1aa3 ebb363cb 4d9ebdbe 303b0603 551d1104 34303282 1776706e 6777312e 
+    6f73672e 6e727465 6c65636f 6d2e756b 82177670 6e677732 2e6f7367 2e6e7274 
+    656c6563 6f6d2e75 6b300e06 03551d0f 0101ff04 04030205 a0301d06 03551d25 
+    04163014 06082b06 01050507 03010608 2b060105 05070302 303e0603 551d1f04 
+    37303530 33a031a0 2f862d68 7474703a 2f2f6364 702e6765 6f747275 73742e63 
+    6f6d2f47 656f5472 75737452 53414341 32303138 2e63726c 303e0603 551d2004 
+    37303530 33060667 810c0102 02302930 2706082b 06010505 07020116 1b687474 
+    703a2f2f 7777772e 64696769 63657274 2e636f6d 2f435053 30750608 2b060105 
+    05070101 04693067 30260608 2b060105 05073001 861a6874 74703a2f 2f737461 
+    7475732e 67656f74 72757374 2e636f6d 303d0608 2b060105 05073002 86316874 
+    74703a2f 2f636163 65727473 2e67656f 74727573 742e636f 6d2f4765 6f547275 
+    73745253 41434132 3031382e 63727430 0c060355 1d130101 ff040230 00308201 
+    7d060a2b 06010401 d6790204 02048201 6d048201 69016700 7600e83e d0da3ef5 
+    063532e7 5728bc89 6bc903d3 cbd1116b eceb69e1 777d6d06 bd6e0000 017e2ef6 
+    912f0000 04030047 30450220 3070ff7d f12991dd bb7d8f10 bf599a0e 9ea76489 
+    cda06607 46b3b730 5348504c 02210085 95845722 35a5153a 9f5b0672 74038b34 
+    5be694cd 38490afd 0d4b5063 5a7b0300 760035cf 191bbfb1 6c57bf0f ad4c6d42 
+    cbbbb627 202651ea 3fe12aef a803c33b d64c0000 017e2ef6 91260000 04030047 
+    30450221 00912357 dca3a729 e7b0881d a989c62d 74451c55 90e14d60 95366990 
+    3f9774a1 9402200a 9a2912ec 0bd0299c cdf30604 db7edc9d 48fab2af 4f0db9dc 
+    1d56b459 74820e00 7500b373 7707e184 50f86386 d605a9dc 11094a79 2db1670c 
+    0b87dcf0 030e7936 a59a0000 017e2ef6 91490000 04030046 30440220 474713c6 
+    aad026e0 0ad01574 7622c1db d60cd7fc aff318a5 d49aefea 570d3626 02205b75 
+    bf7f0bbb f971ba9c d3d9cca0 790bc292 3138da23 af8cfb39 99fa7706 71d5300d 
+    06092a86 4886f70d 01010b05 00038201 01000093 5e3e63d9 a05bd043 54ce0fc6 
+    233c9182 6d149626 4d9a3fbc fc8d64c7 466f3a14 4dfa3f8e 7413f3ad 3a083a73 
+    2b297931 1124e6b6 78a445c2 5da61d73 6f4f3403 4ea7f658 24e49d99 207bac4b 
+    b4723b10 e9f6d8aa df000a38 27ef8d7d 32c5d9b9 2b5bba7f 4c08eef5 1756c592 
+    d7e72c94 ff6ce385 7cddc6c1 8267cb42 1a995fb8 8d71e8ee b318ba9e d8556ed6 
+    5a538bd1 f8af4767 912b2329 d90e4684 58aa2d02 9990a6bc 7928fee2 cb6283d5 
+    2d5c2eae f7d33c4f 6882f166 7e3c8d9a 6f9f99da 1ba43897 f1bebb42 2103206d 
+    360b16b2 67e0c568 b7804b90 11cb67bc b5497f64 63eea11b d0f016ed 712f3566 
+    0ed41300 e0cabe6c a33cd478 d318b26f c8af
+  quit
+crypto ikev2 policy 1
+ encryption aes-gcm-256 aes-gcm-192 aes-gcm
+ integrity null
+ group 19 14
+ prf sha256
+ lifetime seconds 86400
+crypto ikev2 policy 5
+ encryption aes-256 aes-192 aes
+ integrity sha512 sha256
+ group 19 14
+ prf sha256
+ lifetime seconds 86400
+crypto ikev2 policy 10
+ encryption aes
+ integrity sha
+ group 14
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 20
+ encryption aes-256
+ integrity sha256
+ group 14
+ prf sha256
+ lifetime seconds 86400
+crypto ikev2 enable outside client-services port 443
+crypto ikev2 remote-access trustpoint vpngw1
+!
+track 1 rtr 1 reachability
+telnet timeout 5
+ssh stricthostkeycheck
+ssh pubkey-chain
+  server 10.17.20.228
+    key-hash sha256 3f:6a:10:f1:23:4d:51:86:43:02:3c:ac:df:c0:0a:a8:35:19:20:8d:86:f0:27:1c:96:50:f8:41:de:50:0c:6c
+  server 10.16.80.69
+    key-hash sha256 e2:72:74:bf:8e:a3:d8:5d:d7:13:d7:11:98:6f:14:06:98:49:62:83:61:3a:9d:9a:97:1c:28:c5:4f:c0:71:73
+ssh timeout 5
+ssh version 2
+ssh key-exchange group dh-group1-sha1
+ssh 10.16.22.68 255.255.255.255 management
+ssh 10.16.80.35 255.255.255.255 management
+ssh 10.16.88.35 255.255.255.255 management
+ssh 10.16.80.36 255.255.255.255 management
+ssh 10.16.80.37 255.255.255.255 management
+ssh 10.16.80.38 255.255.255.255 management
+ssh 10.16.80.39 255.255.255.255 management
+ssh 10.16.88.36 255.255.255.255 management
+ssh 10.16.88.37 255.255.255.255 management
+ssh 10.16.88.38 255.255.255.255 management
+ssh 10.16.88.39 255.255.255.255 management
+ssh 10.16.80.69 255.255.255.255 management
+ssh 10.16.80.31 255.255.255.255 management
+ssh 10.16.88.69 255.255.255.255 management
+ssh 10.16.98.90 255.255.255.255 management
+ssh 10.16.98.78 255.255.255.255 management
+ssh 10.16.142.0 255.255.255.0 management
+ssh 10.16.96.0 255.255.252.0 management
+ssh 10.16.98.0 255.255.255.0 management
+console timeout 5
+dhcpd auto_config outside
+!
+threat-detection basic-threat
+threat-detection scanning-threat shun except ip-address 10.16.0.0 255.255.0.0
+threat-detection scanning-threat shun except ip-address 10.17.20.240 255.255.255.248
+threat-detection statistics
+threat-detection statistics tcp-intercept rate-interval 30 burst-rate 400 average-rate 200
+ntp server 10.16.80.129 source management
+ssl server-version tlsv1.2
+ssl client-version tlsv1.2
+ssl cipher default high
+ssl cipher tlsv1 custom "AES256-SHA"
+ssl cipher tlsv1.2 high
+ssl trust-point vpngw1 outside
+ssl trust-point vpngw1 inside
+ssl trust-point vpngw1 mfa-vpn
+ssl trust-point vpngw1 asr-mgt
+ssl trust-point OSG management
+ssl trust-point OSG management vpnlb-ip
+webvpn
+ enable outside
+ http-headers
+  hsts-server
+   enable
+   max-age 31536000
+   include-sub-domains
+   no preload
+  hsts-client
+   enable
+  x-content-type-options
+  x-xss-protection
+  content-security-policy
+ anyconnect image disk0:/anyconnect-linux64-4.10.07073-webdeploy-k9.pkg 1
+ anyconnect image disk0:/anyconnect-win-4.10.07073-webdeploy-k9.pkg 2
+ anyconnect image disk0:/anyconnect-macos-4.10.07073-webdeploy-k9.pkg 3
+ anyconnect profiles osg disk0:/osg.xml
+ anyconnect enable
+ tunnel-group-list enable
+ cache
+  disable
+ error-recovery disable
+group-policy DfltGrpPolicy attributes
+ vpn-tunnel-protocol ikev1 ikev2 l2tp-ipsec ssl-client ssl-clientless
+ webvpn
+  anyconnect profiles value OSG type user
+group-policy GroupPolicy_OSG internal
+group-policy GroupPolicy_OSG attributes
+ wins-server none
+ dns-server value 8.8.8.8 10.16.22.50
+ vpn-simultaneous-logins 250
+ vpn-filter value outside_access_in
+ vpn-tunnel-protocol ikev2 ssl-client ssl-clientless
+ split-tunnel-policy excludespecified
+ split-tunnel-network-list value AnyConnect_SplitDNS
+ default-domain value ops.nrtelecom.net
+ split-dns value ops.nrtelecom.net
+ webvpn
+  url-list value NRT_OSG
+  anyconnect profiles value osg type user
+dynamic-access-policy-record DfltAccessPolicy
+password-policy minimum-length 14
+password-policy minimum-changes 14
+password-policy minimum-lowercase 1
+password-policy minimum-uppercase 1
+password-policy minimum-numeric 1
+password-policy minimum-special 1
+quota management-session 3
+username nmsmgmt_intr password ***** pbkdf2 privilege 5
+username nmsmgmt_intr2 password ***** pbkdf2 privilege 7
+username admin password ***** pbkdf2 privilege 15
+username T2admin password ***** pbkdf2 privilege 15
+username socadmin password ***** pbkdf2 privilege 15
+tunnel-group OSG type remote-access
+tunnel-group OSG general-attributes
+ address-pool OSG
+ authentication-server-group OSG
+ default-group-policy GroupPolicy_OSG
+tunnel-group OSG webvpn-attributes
+ group-alias OSG disable
+ group-alias OSG_South enable
+tunnel-group 185.33.76.76 type ipsec-l2l
+tunnel-group 185.33.76.76 ipsec-attributes
+ ikev2 remote-authentication pre-shared-key 8 v9P1TMjEGnWcO3r2Zk3pqE2GYuBTZKBAmgxa1XW1fzkDReb0q+3u28kSt7a+3Ton
+ ikev2 local-authentication pre-shared-key 8 NVrLFlqoUst59E7SxR7RkMGdXuYsFaWoWJfOv7y+ecVjgRpbPh/TBYCx4RLe/on0
+tunnel-group 194.72.121.169 type ipsec-l2l
+tunnel-group 194.72.121.169 ipsec-attributes
+ ikev2 remote-authentication pre-shared-key 8 SWH3kCe9iNCorrN5sV5ZKvuMGrCpXPhqiGiineikm3aSy9yNHSMiRurQAe/6zsR6q1cMYO5XpnCuDrDqFqKFyIh+lcrckUSAaoN4x6jzQwGVCZEuE3Q3Tnb0fBqRCGTnkaOCrsXox8Tv2Kz0Gjioa7k02cncVuIcMaY3E0FaD5ibPDECLZ5fRv65A8Y=
+ ikev2 local-authentication pre-shared-key 8 mvJKbXh1iWUSPTPfN3JVmzR4j6+/f8+CdP2oUt6p3N/+Pg+sUQatrsVnvvGHPuGIOWy2F/dOZAKIWVJ0t+/E0qdL23xdXiyeuqoXfrViHwI68pulgu6ANBK93Fj8WK2iqvRepQwegRP93Q7UTWmGeG0OmztgDMehemchMoFU8y0WLSG2ojuGsru4pDw=
+tunnel-group 109.234.169.146 type ipsec-l2l
+tunnel-group 109.234.169.146 ipsec-attributes
+ ikev2 remote-authentication pre-shared-key 8 6qdb66Y+pzNTh0s26mlb66707K1PVMSX+U/LcMSwrLzDdatcIDMml5z2bCyH5hOYdIFMMNgipb0uVYwo8IOsVrZMcRwBxVK3+Ordcr6ZMdaSVbdSNZfG+2AoI++xhjo35AKr02sk1I1WEPIX4adm5/i8Q84hWC/P9S6k8kzQrqffAnV7KjAZ0eXk27ZikeWi
+ ikev2 local-authentication pre-shared-key 8 PAd7dfXXuHtrNCM0B6VUDbBZaUhptVym8JnnOJUj/rY4gFq17S92i13CWnsKoUYAnVMSCqjm+3Lhwzm9NhPdGBEFuPD0JeQ6IMVtaz4vntLZdW7nU16oNuT4Rg7WCUYDqrKTAjEgFlH1ga6XUYguU6nZl/C42wjavtskPmaXGgQM7onFkobxGTZqYMbtSxwD
+tunnel-group 109.234.168.146 type ipsec-l2l
+tunnel-group 109.234.168.146 ipsec-attributes
+ ikev2 remote-authentication pre-shared-key 8 TEqeqH2enVXtWiFwqsgNLKNgwf4hLRtEJa6K2Ij5ibLIs7UbfeLV6I0+Mg7PxTYo/dbY7H0AC12i2be6ygbEhMv53OPtH4XbBqjnqwK3GnW2Nn6onhRs3UUgektEVRVRaontAR6GaHhS8t89ROQ746K3Ch+V+Dphz+VJQVWObpqBKZkTiUPTWFjs2ZBnTBj7
+ ikev2 local-authentication pre-shared-key 8 rrxHSN/EpOvFB6MbXSzwrZcVrp/qp+ISB4g40BG2r6xB5LKuIHhgJqbBfHEg6yu5cedFuJ9YDVIUhjx1xa746T7PXJNItAkc9neU3WnRJEeoXVKV7RsG67xNj8a99/f9aCnyuYTDNzQm93elYl3bQNjz45dQ8D9maisSlMWQUdjPz5p5/QGit0/mwCDKfMvK
+!
+class-map global-class
+ match any
+class-map inspection_default
+ match default-inspection-traffic
+!
+!
+policy-map type inspect dns preset_dns_map
+ parameters
+  message-length maximum client auto
+  message-length maximum 512
+  no tcp-inspection
+policy-map global_policy
+ class inspection_default
+  inspect dns preset_dns_map 
+  inspect ftp 
+  inspect h323 h225 
+  inspect h323 ras 
+  inspect rsh 
+  inspect rtsp 
+  inspect esmtp 
+  inspect sqlnet 
+  inspect skinny 
+  inspect sunrpc 
+  inspect xdmcp 
+  inspect sip  
+  inspect netbios 
+  inspect tftp 
+  inspect ip-options 
+  inspect icmp 
+  inspect snmp 
+ class global-class
+  sfr fail-open
+!
+service-policy global_policy global
+privilege cmd level 5 mode exec command copy
+privilege show level 5 mode exec command running-config
+privilege show level 5 mode exec command startup-config
+privilege show level 5 mode exec command firewall
+privilege show level 5 mode exec command conn
+privilege show level 5 mode exec command cpu
+privilege show level 5 mode exec command tech-support
+privilege show level 5 mode exec command xlate
+privilege show level 5 mode exec command shun
+privilege show level 5 mode exec command names
+privilege show level 5 mode exec command name
+privilege show level 5 mode exec command interface
+privilege show level 5 mode exec command nameif
+privilege show level 5 mode exec command logging
+privilege show level 5 mode exec command failover
+privilege show level 5 mode exec command nat
+privilege show level 5 mode exec command bgp
+privilege show level 5 mode exec command snmp-server
+privilege show level 5 mode exec command sla
+privilege show level 5 mode exec command crypto
+privilege show level 5 mode exec command isakmp
+privilege show level 5 mode exec command ipsec
+privilege show level 5 mode exec command vpn-sessiondb
+privilege show level 5 mode exec command mac-address-table
+privilege show level 5 mode exec command ntp
+privilege show level 5 mode exec command ntp
+privilege show level 5 mode exec command quota
+privilege show level 5 mode exec command memory-utilization
+prompt hostname priority state 
+no call-home reporting anonymous
+password encryption aes
+hpm topN enable
+Cryptochecksum:bd88a1108f38cccce4895cedee93ba56
+: end

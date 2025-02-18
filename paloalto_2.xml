@@ -1,0 +1,34 @@
+<config version="10.2.0" urldb="paloaltonetworks">
+  <devices>
+    <entry name="HQ-Firewall">
+      <vsys>
+        <entry name="vsys1">
+          <rulebase>
+            <security>
+              <rules>
+                <entry name="Block_ICMP">
+                  <from><member>untrust</member></from>
+                  <to><member>trust</member></to>
+                  <source><member>any</member></source>
+                  <destination><member>any</member></destination>
+                  <service><member>application-default</member></service>
+                  <application><member>ping</member></application>
+                  <action>deny</action>
+                </entry>
+                <entry name="Allow_Web_Traffic">
+                  <from><member>trust</member></from>
+                  <to><member>untrust</member></to>
+                  <source><member>192.168.1.0/24</member></source>
+                  <destination><member>any</member></destination>
+                  <service><member>service-http</member></service>
+                  <application><member>web-browsing</member></application>
+                  <action>allow</action>
+                </entry>
+              </rules>
+            </security>
+          </rulebase>
+        </entry>
+      </vsys>
+    </entry>
+  </devices>
+</config>

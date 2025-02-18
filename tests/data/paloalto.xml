@@ -1,0 +1,209 @@
+    <config>
+    <post-rulebase>
+      <security>
+        <rules>
+                <entry name="rule1" uuid="012bc273-1">
+                  <target>
+                    <negate>no</negate>
+                    <devices>
+                      <entry name="1">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="2">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="3">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="4">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                    </devices>
+                  </target>
+                  <to>
+                    <member>CorpWAN-Ext</member>
+                  </to>
+                  <from>
+                    <member>VSYS-EXTERNAL</member>
+                  </from>
+                  <source>
+                    <member>10.231.202.80</member>
+                    <member>10.231.202.83</member>
+                    <member>10.231.218.80</member>
+                    <member>10.231.218.83</member>
+                  </source>
+                  <destination>
+                    <member>10.231.135.186</member>
+                    <member>10.231.135.187</member>
+                    <member>10.231.172.92</member>
+                    <member>10.231.172.93</member>
+                    <member>10.231.172.95</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>TCP-1414</member>
+                  </service>
+                  <source-hip>
+                    <member>any</member>
+                  </source-hip>
+                  <destination-hip>
+                    <member>any</member>
+                  </destination-hip>
+                  <action>allow</action>
+                  <log-setting>log_settings</log-setting>
+                  <description>mydescription</description>
+                </entry>
+                <entry name="rule2" uuid="ab6fee1a-2">
+                  <target>
+                    <negate>no</negate>
+                    <devices>
+                      <entry name="3">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="4">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="1">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="2">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                    </devices>
+                  </target>
+                  <to>
+                    <member>VSYS-EXTERNAL</member>
+                  </to>
+                  <from>
+                    <member>CorpWAN-Ext</member>
+                  </from>
+                  <source>
+                    <member>10.231.202.80</member>
+                    <member>10.231.202.83</member>
+                    <member>10.231.218.80</member>
+                    <member>10.231.218.83</member>
+                  </source>
+                  <destination>
+                    <member>10.231.135.186</member>
+                    <member>10.231.135.187</member>
+                    <member>10.231.172.92</member>
+                    <member>10.231.172.93</member>
+                    <member>10.231.172.95</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>TCP-1414</member>
+                  </service>
+                  <source-hip>
+                    <member>any</member>
+                  </source-hip>
+                  <destination-hip>
+                    <member>any</member>
+                  </destination-hip>
+                  <action>allow</action>
+                  <log-setting>log_settings</log-setting>
+                  <description>mydescription</description>
+                </entry>
+                <entry name="rule3" uuid="ab6fee1a-3">
+                  <target>
+                    <negate>no</negate>
+                    <devices>
+                      <entry name="3">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="4">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="1">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                      <entry name="2">
+                        <vsys>
+                          <entry name="vsys1"/>
+                        </vsys>
+                      </entry>
+                    </devices>
+                  </target>
+                  <to>
+                    <member>VSYS-EXTERNAL</member>
+                  </to>
+                  <from>
+                    <member>CorpWAN-Ext</member>
+                  </from>
+                  <source>
+                    <member>10.231.202.80</member>
+                    <member>10.231.202.83</member>
+                    <member>10.231.218.80</member>
+                    <member>10.231.218.83</member>
+                  </source>
+                  <destination>
+                    <member>10.231.135.186</member>
+                    <member>10.231.135.187</member>
+                    <member>10.231.172.92</member>
+                    <member>10.231.172.93</member>
+                    <member>10.231.172.95</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>TCP-1414</member>
+                  </service>
+                  <source-hip>
+                    <member>any</member>
+                  </source-hip>
+                  <destination-hip>
+                    <member>any</member>
+                  </destination-hip>
+                  <action>allow</action>
+                  <log-setting>log_settings</log-setting>
+                  <description>my_description</description>
+                </entry>
+        </rules>
+      </security>
+    </post-rulebase>
+    </config>

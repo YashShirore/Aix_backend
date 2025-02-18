@@ -1,0 +1,1 @@
+{'file': 'randomized_config.xml', 'status': 'success', 'vendor': 'paloalto', 'result': 'Success: Report saved as uploads\\report_output\\randomized_config_20241231_100450_report.xlsx'}

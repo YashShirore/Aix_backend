@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "firewall-analyzer"
+version = "0.1.0"
+description = "Firewall audit tool to check for security issues and sub optimal configuration"
+authors = ["acopeland <acopeland@caci.co.uk>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.2"
+lxml = "^5.2.2"
+openpyxl = "^3.1.4"
+netaddr = "^1.3.0"
+more-itertools = "^10.3.0"
+ciscoconfparse = "^1.9.41"
+pydantic = "^2.7.4"
+setuptools = "^70.0.0"
+pretty-html-table = "^0.9.16"
+matplotlib = "^3.9.0"
+jinja2 = "^3.1.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+ipdb = "^0.13.13"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

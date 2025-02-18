@@ -1,0 +1,37 @@
+<config version="10.2.0" urldb="paloaltonetworks" detail-version="10.2.8">
+  <devices>
+    <entry name="localhost.localdomain">
+      <vsys>
+        <entry name="vsys1">
+          <rulebase>
+            <security>
+              <rules>
+                <entry name="Allow_HTTP">
+                  <from>
+                    <member>trust</member>
+                  </from>
+                  <to>
+                    <member>untrust</member>
+                  </to>
+                  <source>
+                    <member>192.168.10.0/24</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <service>
+                    <member>service-http</member>
+                  </service>
+                  <application>
+                    <member>web-browsing</member>
+                  </application>
+                  <action>allow</action>
+                </entry>
+              </rules>
+            </security>
+          </rulebase>
+        </entry>
+      </vsys>
+    </entry>
+  </devices>
+</config>
